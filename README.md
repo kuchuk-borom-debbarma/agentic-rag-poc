@@ -6,6 +6,14 @@ The application consists of a FastAPI backend and a React/Vite frontend. All cor
 
 ---
 
+## 🌟 Benchmark Highlights
+The system is deterministically evaluated against a strict 30-case benchmark suite to penalize hallucinations. During the latest evaluation (`gemini-3.1-flash-lite` + `qwen3-embedding`):
+- **90.0% Pass Rate:** Successfully answered or safely rejected 27 out of 30 complex legal questions.
+- **93.3% Hallucination Safety:** Actively recognized and rejected unanswerable "trap" questions without generating false claims.
+- **74.1% Section Recall:** Successfully traversed the SQLite document graph to locate the precise, expected legal clauses.
+
+---
+
 ## 📚 Documentation & Deep Dives
 
 To keep this README clean, all technical overviews, architecture decisions, and benchmark data have been organized into standalone documents. Please review them here:
