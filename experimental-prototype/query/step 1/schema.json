@@ -1,0 +1,48 @@
+{
+  "document": {
+    "document_id": "aws_customer_agreement",
+    "title": "AWS Customer Agreement",
+    "source_path": "resources/AWS Customer Agreement.pdf",
+    "source_type": "pdf",
+    "source_hash": "sha256:example",
+    "processor_version": "document_graph.v1"
+  },
+  "sections": [
+    {
+      "section_id": "section_2",
+      "section_number": "2",
+      "title": "Your Responsibilities",
+      "level": 1,
+      "parent_section_id": null,
+      "child_section_ids": ["section_2_2"],
+      "chunk_ids": ["chunk_0015"],
+      "order": 8
+    },
+    {
+      "section_id": "section_2_2",
+      "section_number": "2.2",
+      "title": "Your Content",
+      "level": 2,
+      "parent_section_id": "section_2",
+      "child_section_ids": [],
+      "chunk_ids": ["chunk_0017"],
+      "order": 10
+    }
+  ],
+  "chunks": [
+    {
+      "chunk_id": "chunk_0017",
+      "section_id": "section_2_2",
+      "section_number": "2.2",
+      "text": "2.2 Your Content. You are responsible for Your Content...",
+      "chunk_type": "section_heading",
+      "order": 17,
+      "page_start": 2,
+      "page_end": 2,
+      "previous_chunk_id": "chunk_0016",
+      "next_chunk_id": "chunk_0018",
+      "referenced_section_ids": [],
+      "referenced_by_chunk_ids": ["chunk_0011"]
+    }
+  ]
+}

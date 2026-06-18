@@ -1,0 +1,376 @@
+AWS Customer Agreement Query Test Questions
+Source: resources/AWS Customer Agreement.pdf
+Purpose: Use these questions to test retrieval quality, router decomposition, branch answers, verifier behavior, and final synthesis.
+
+Format:
+- Question: user-facing test question.
+- Expected answer: concise answer the system should produce from source material only.
+- Sections: expected supporting sections.
+
+Level 1 - Simple Direct Lookup
+
+1. Question: When does the AWS Customer Agreement take effect?
+   Expected answer: It takes effect when the customer clicks an "I Accept" button or checkbox for the terms, or earlier when the customer uses any Services.
+   Sections: Front Matter
+
+2. Question: What must a person represent if they enter the agreement for a company?
+   Expected answer: They represent that they have legal authority to bind that entity.
+   Sections: Front Matter
+
+3. Question: Can a customer access and use AWS services under the agreement?
+   Expected answer: Yes, the customer may access and use the Services in accordance with the Agreement, and some Services are also subject to Service Level Agreements and Service Terms.
+   Sections: 1.1; 12 (Service Level Agreement; Service Terms)
+
+4. Question: Does AWS say Third-Party Content can have separate terms and fees?
+   Expected answer: Yes. Third-Party Content may be used by the customer at their election and may be governed by separate terms and charges in addition to the Agreement.
+   Sections: 1.2; 12 (Third-Party Content)
+
+5. Question: What security measures does AWS agree to implement for customer content?
+   Expected answer: AWS will implement reasonable and appropriate measures designed to help secure Your Content against accidental or unlawful loss, access, or disclosure.
+   Sections: 1.3
+
+6. Question: Who chooses the AWS regions where customer content is stored?
+   Expected answer: The customer may specify the AWS regions where Your Content will be stored.
+   Sections: 1.4
+
+7. Question: What is AWS allowed to do with Your Content under the data privacy section?
+   Expected answer: AWS will not access or use Your Content except as necessary to maintain or provide the Services, or to comply with law or a binding government order.
+   Sections: 1.4
+
+8. Question: How much prior notice does AWS normally give before discontinuing a material functionality of a generally available Service the customer is using?
+   Expected answer: AWS will provide at least 12 months' prior notice, unless an exception applies.
+   Sections: 1.5
+
+9. Question: How much notice does AWS give for adverse changes to Service Level Agreements?
+   Expected answer: AWS will provide at least 90 days' advance notice for adverse changes to any Service Level Agreement.
+   Sections: 1.6
+
+10. Question: What must a customer have to access the Services?
+    Expected answer: The customer must have an AWS account associated with a valid email address and a valid form of payment.
+    Sections: 2.1
+
+11. Question: Who is responsible for activities under the customer's account?
+    Expected answer: Except to the extent caused by AWS's breach, the customer is responsible for all activities under the account, whether authorized or performed by the customer, employees, third parties, contractors, agents, or End Users.
+    Sections: 2.1
+
+12. Question: Who is responsible for Your Content?
+    Expected answer: The customer is responsible for Your Content and must ensure it and the use of it or the Services by the customer and End Users do not violate Policies or applicable law.
+    Sections: 2.2; 12 (Policies; Your Content)
+
+13. Question: Who is responsible for backing up customer content?
+    Expected answer: The customer is responsible for properly configuring and using the Services and taking appropriate action to secure, protect, and back up accounts and Your Content.
+    Sections: 2.3
+
+14. Question: Can AWS login credentials and private keys be sold?
+    Expected answer: No. AWS login credentials and private keys are for internal use only and may not be sold, transferred, or sublicensed, except private keys may be disclosed to agents and subcontractors working on the customer's behalf.
+    Sections: 2.4
+
+15. Question: Does AWS provide support directly to End Users?
+    Expected answer: Not unless AWS has a separate agreement with the customer or an End User obligating AWS to provide that support or service.
+    Sections: 2.5
+
+16. Question: How does AWS calculate and bill fees?
+    Expected answer: AWS calculates and bills fees and charges monthly, but may bill more frequently if it reasonably suspects fraud or risk of non-payment.
+    Sections: 3.1
+
+17. Question: Can AWS charge a different valid payment method if the default payment method has a problem?
+    Expected answer: Yes. If there is a problem charging the default payment method, AWS may charge any other valid payment method associated with the account.
+    Sections: 3.1
+
+18. Question: What interest rate may AWS charge on late payments?
+    Expected answer: AWS may elect to charge 1.5% per month, or the highest rate permitted by law if lower.
+    Sections: 3.1
+
+19. Question: Are AWS fees exclusive of indirect taxes?
+    Expected answer: Yes, all fees payable by the customer are exclusive of Indirect Taxes except where applicable law requires otherwise.
+    Sections: 3.2; 12 (Indirect Taxes)
+
+20. Question: What is the basic definition of Content?
+    Expected answer: Content means software, including machine images, data, text, audio, video, or images.
+    Sections: 12
+
+Level 2 - Section-Level Understanding
+
+21. Question: When may AWS temporarily suspend access to Services?
+    Expected answer: AWS may suspend immediately upon notice if it reasonably determines use poses security or liability risks, could adversely impact AWS or others, could be fraudulent, the customer or End User materially breaches the Agreement, the customer breaches payment obligations, or the customer faces insolvency-type events.
+    Sections: 4.1; 3
+
+22. Question: What happens to fees during a suspension?
+    Expected answer: The customer remains responsible for fees and charges incurred during the suspension period that AWS bills.
+    Sections: 4.2; 3.1
+
+23. Question: Can a suspended customer receive SLA service credits for the suspension period?
+    Expected answer: No. The customer is not entitled to service credits under Service Level Agreements for any period of suspension.
+    Sections: 4.2; 12 (Service Level Agreement)
+
+24. Question: How can the customer terminate for convenience?
+    Expected answer: The customer may terminate for any reason by giving notice and closing the account for all Services where AWS provides an account-closing mechanism.
+    Sections: 5.2(a)
+
+25. Question: How can AWS terminate for convenience?
+    Expected answer: AWS may terminate for any reason by providing at least 30 days' advance notice.
+    Sections: 5.2(a)
+
+26. Question: When can either party terminate for material breach?
+    Expected answer: Either party may terminate for cause if the other party is in material breach and the breach remains uncured for 30 days after notice.
+    Sections: 5.2(b)(i)
+
+27. Question: When can AWS terminate immediately after a suspension issue?
+    Expected answer: AWS may terminate immediately if it has a right to suspend under Section 4 and the issue cannot be remedied or is not remedied within 30 days after suspension.
+    Sections: 5.2(b)(ii); 4.1
+
+28. Question: What rights end on the Termination Date?
+    Expected answer: Except for stated post-termination access and surviving provisions, all customer rights under the Agreement immediately terminate on the Termination Date.
+    Sections: 5.3(a); 12 (Termination Date)
+
+29. Question: Which provisions survive termination?
+    Expected answer: Sections 2.1, 3, 5.3, 6 except 6.3, 7, 8, 9, 11, and 12 continue to apply according to their terms.
+    Sections: 5.3(a)(iv)
+
+30. Question: What access to Your Content is available after termination?
+    Expected answer: Unless AWS terminated under Section 5.2(b), during the 30 days after the Termination Date AWS will not remove Your Content due to termination and will allow retrieval only if all amounts due are paid.
+    Sections: 5.3(b); 5.2(b)
+
+31. Question: Does AWS obtain ownership rights in Your Content?
+    Expected answer: Except as provided in Section 6, AWS obtains no rights from the customer or licensors to Your Content, but the customer consents to AWS using it to provide Services to the customer and End Users.
+    Sections: 6.1
+
+32. Question: What rights must the customer have in Your Content and Suggestions?
+    Expected answer: The customer represents that they or licensors own all right, title, and interest in Your Content and Suggestions, have necessary rights to grant the contemplated rights, and that Your Content or End User use will not violate the Acceptable Use Policy.
+    Sections: 6.2; 12 (Acceptable Use Policy; Suggestions)
+
+33. Question: What restrictions apply to AWS Content and Services?
+    Expected answer: Customers and End Users may use AWS Content and Services only as expressly permitted; they may not reverse engineer, avoid fees or limits, resell Services or AWS Content, misuse AWS Marks, or misrepresent the relationship with AWS.
+    Sections: 6.4; 12 (AWS Content; AWS Marks)
+
+34. Question: What happens if the customer gives AWS Suggestions?
+    Expected answer: AWS and affiliates may use Suggestions without restriction; the customer irrevocably assigns all rights in them to AWS and agrees to help document and maintain those rights.
+    Sections: 6.5; 12 (Suggestions)
+
+35. Question: What general indemnity does the customer owe AWS?
+    Expected answer: To the extent permitted by law, the customer must defend, indemnify, and hold harmless AWS and related parties from Losses from third-party claims about use of Services, account activity, breach or legal violation by the customer, End Users or Your Content, or disputes between the customer and End Users.
+    Sections: 7.1; 12 (Losses)
+
+36. Question: What intellectual property claim does AWS defend?
+    Expected answer: Subject to Section 7 limits, AWS will defend the customer and its employees, officers, and directors against third-party claims that the Services infringe or misappropriate that third party's IP rights, and pay adverse final judgments or settlements.
+    Sections: 7.2(a)
+
+37. Question: What intellectual property claim does the customer defend?
+    Expected answer: Subject to Section 7 limits, the customer will defend AWS and related parties against third-party claims that Your Content infringes or misappropriates IP rights, and pay adverse final judgments or settlements.
+    Sections: 7.2(b)
+
+38. Question: What process must a party follow to receive defense or indemnity?
+    Expected answer: The party seeking defense or indemnity must give prompt written notice, permit the other party to control defense and settlement, and reasonably cooperate at the other party's expense.
+    Sections: 7.3
+
+39. Question: What warranties does AWS disclaim?
+    Expected answer: Except where prohibited by law or non-waivable statutory rights apply, AWS and related parties make no warranties about Services, AWS Content, or Third-Party Content, including merchantability, fitness, non-infringement, quiet enjoyment, uninterrupted or error-free operation, freedom from harmful components, or content security/loss/alteration.
+    Sections: 8
+
+40. Question: What is the general damages cap?
+    Expected answer: Except for payment obligations under Section 7 and other stated exceptions, aggregate liability will not exceed amounts paid by the customer to AWS for the Services giving rise to liability during the 12 months before the liability arose.
+    Sections: 9.2; 7
+
+Level 3 - Multi-Section and Workflow Questions
+
+41. Question: If AWS changes a Service, changes an SLA, and changes the Agreement, what notices or effects apply?
+    Expected answer: Service discontinuation of material functionality normally requires at least 12 months' notice subject to exceptions; adverse SLA changes require at least 90 days' notice; Agreement or Policy modifications become effective upon posting or as stated in an email notice, and continued use after the effective date means acceptance.
+    Sections: 1.5; 1.6; 10; 11.10
+
+42. Question: If AWS must comply with a government order about Your Content, what can AWS do and what notice is required?
+    Expected answer: AWS may access, use, disclose, or move Your Content as necessary to comply with law or a binding government order. Unless prohibited by law or the order, AWS will notify the customer.
+    Sections: 1.4
+
+43. Question: If an End User violates the customer's obligations, what must the customer do and who is responsible?
+    Expected answer: The customer is responsible for End Users' use and compliance. If aware of a violation caused by an End User, the customer must immediately suspend that End User's access to Your Content and Services.
+    Sections: 2.5; 2.2
+
+44. Question: If unauthorized activity occurs under the customer's account, can the customer avoid responsibility because it was a third party?
+    Expected answer: Generally no. Except to the extent caused by AWS's breach, the customer is responsible for all account activity whether authorized or performed by the customer, employees, contractors, agents, End Users, or third parties, and AWS is not responsible for unauthorized access.
+    Sections: 2.1
+
+45. Question: If a customer's use creates a security risk and the issue is not remediable, what can AWS do?
+    Expected answer: AWS may suspend access immediately upon notice under Section 4.1 and may terminate immediately if the suspension issue is not capable of being remedied.
+    Sections: 4.1; 5.2(b)(ii)
+
+46. Question: If AWS suspends an account for unpaid fees, does AWS have to keep billing after suspension?
+    Expected answer: AWS may elect not to bill fees and charges after suspension unless the account is reinstated, but the customer remains responsible for fees incurred during suspension that AWS bills.
+    Sections: 3.1; 4.2
+
+47. Question: If AWS terminates for cause under Section 5.2(b), does the 30-day post-termination content retrieval period apply?
+    Expected answer: No. The 30-day post-termination retrieval commitment applies unless AWS terminates use of the Services under Section 5.2(b).
+    Sections: 5.3(b); 5.2(b)
+
+48. Question: What must the customer pay after termination if they continue using Services?
+    Expected answer: For any use after the Termination Date, the Agreement still applies and the customer must pay applicable fees at the rates under Section 3.
+    Sections: 5.3(b); 3
+
+49. Question: How do customer content ownership, AWS's service-use consent, and backup responsibility fit together?
+    Expected answer: AWS obtains no ownership rights in Your Content except as provided in Section 6, but the customer consents to AWS using it to provide Services. The customer remains responsible for Your Content and for securing, protecting, and backing it up.
+    Sections: 6.1; 2.2; 2.3
+
+50. Question: If the customer submits a purchase order with conflicting terms, do those terms control?
+    Expected answer: No. The Agreement is the entire agreement and AWS will not be bound by additional or different terms submitted in orders, receipts, questionnaires, invoicing processes, or similar documents.
+    Sections: 11.2
+
+51. Question: If a Policy conflicts with the Agreement, which controls?
+    Expected answer: The Agreement controls over any inconsistent Policy, except the Service Terms control over the Agreement.
+    Sections: 11.2; 12 (Policies; Service Terms)
+
+52. Question: If performance is delayed because of a force majeure event, are payment obligations excused?
+    Expected answer: No. The force majeure clause excludes payment obligations; otherwise, neither party nor affiliates are liable for delay or failure caused by events beyond reasonable control.
+    Sections: 11.3
+
+53. Question: What law governs disputes, and does the UN Convention for International Sale of Goods apply?
+    Expected answer: The Governing Laws for the applicable AWS Contracting Party govern, without conflict-of-law rules, and the UN Convention for the International Sale of Goods does not apply.
+    Sections: 11.4; 12 (Governing Laws and Governing Courts)
+
+54. Question: If a notice is emailed to the address on the account but the customer does not actually receive it, is it deemed received?
+    Expected answer: Yes. AWS email notices are effective when sent, and the customer is deemed to have received them when AWS sends them to the email address associated with the account, whether or not actually received.
+    Sections: 11.10(a)
+
+55. Question: How can the customer give notice to AWS and when is it effective?
+    Expected answer: The customer must use facsimile, personal delivery, overnight courier, or registered/certified mail to the applicable AWS Contracting Party contact listed in Section 12. Personal delivery is effective immediately, facsimile or overnight courier after one business day, and registered/certified mail after three business days.
+    Sections: 11.10(b); 12 (AWS Contracting Party)
+
+56. Question: Can a party settle an indemnified claim with a non-money commitment without consent?
+    Expected answer: No. A party may not agree to any settlement involving a commitment other than payment of money without the other party's written consent.
+    Sections: 7.3
+
+57. Question: If AWS tells the customer to stop using an allegedly infringing Service, does AWS still owe IP defense for later use?
+    Expected answer: No. AWS has no obligations or liability arising from the customer's or End User's use of Services after AWS notified the customer to discontinue that use.
+    Sections: 7.2(c)
+
+58. Question: What remedies may AWS choose for an IP claim against a Service?
+    Expected answer: AWS may procure rights, replace the alleged infringing portion with a non-infringing alternative, modify it to be non-infringing, or terminate the allegedly infringing portion or the Agreement.
+    Sections: 7.2(d)
+
+59. Question: If a customer wants to publish a press release about using AWS, what does the Agreement say?
+    Expected answer: The customer may not issue any press release or other public communication about the Agreement or use of Services or AWS Content.
+    Sections: 11.9
+
+60. Question: If the English version and a translation conflict, which version controls?
+    Expected answer: The English-language version controls.
+    Sections: 11.8
+
+Level 4 - Complex, Edge-Case, and Router-Decomposition Questions
+
+61. Question: A customer asks: AWS is discontinuing a feature I use because of third-party IP litigation, and also making an adverse SLA change. What notices should I expect?
+    Expected answer: For Service discontinuation, AWS normally gives at least 12 months' notice, but need not provide that notice if discontinuation is necessary to respond to claims, litigation, or loss of third-party IP license rights; AWS must give as much prior notice as reasonably practicable. For adverse SLA changes, AWS must give at least 90 days' advance notice.
+    Sections: 1.5; 1.6
+
+62. Question: A customer asks: If I terminate normally, have unpaid amounts, and need my content after termination, what happens?
+    Expected answer: Unless AWS terminated under Section 5.2(b), AWS will not remove Your Content due to termination during the 30 days after the Termination Date, but will allow retrieval only if all amounts due are paid. The customer remains responsible for fees through the Termination Date and post-termination usage that AWS bills.
+    Sections: 5.3(a); 5.3(b); 3
+
+63. Question: A customer asks: If an End User misuses the Services and that creates a security risk, can AWS suspend us and can we blame the End User?
+    Expected answer: The customer is responsible for End Users' use and compliance. AWS may suspend the customer's or End User's access immediately upon notice if the use poses security risk or other listed risks, and the customer must immediately suspend the End User's access once aware of the violation.
+    Sections: 2.5; 4.1; 2.1
+
+64. Question: A customer asks: If AWS suspends me, do my fees stop and do I get SLA credits?
+    Expected answer: Not necessarily. The customer remains responsible for fees incurred during suspension that AWS bills, and is not entitled to SLA service credits during suspension. AWS may elect not to bill post-suspension fees after a Section 4.1 suspension unless the account is reinstated.
+    Sections: 4.2; 3.1
+
+65. Question: A customer asks: Who protects my data, me or AWS?
+    Expected answer: Both have distinct duties. AWS implements reasonable measures to help secure Your Content against accidental or unlawful loss, access, or disclosure. The customer is responsible for Your Content, proper configuration/use, account and content security, backups, and compliance with Policies and law.
+    Sections: 1.3; 2.2; 2.3
+
+66. Question: A customer asks: Can AWS move my data out of my chosen region for business reasons?
+    Expected answer: The Agreement says AWS will not move Your Content from selected regions except as necessary to comply with law or a binding government order.
+    Sections: 1.4
+
+67. Question: A customer asks: I found a new idea for AWS and sent it as feedback. Can I later claim ownership or restrict AWS from using it?
+    Expected answer: Under the Agreement, AWS and affiliates may use Suggestions without restriction, and the customer irrevocably assigns all rights in Suggestions to AWS and agrees to help document and maintain those rights.
+    Sections: 6.5; 12 (Suggestions)
+
+68. Question: A customer asks: Can I reverse engineer AWS software if local law does not allow that restriction?
+    Expected answer: The Agreement prohibits reverse engineering and similar actions except to the extent applicable law does not allow that restriction.
+    Sections: 6.4
+
+69. Question: A customer asks: If AWS Content is unavailable, can I recover lost profits and the value of my content?
+    Expected answer: Section 9.1 disclaims liability for indirect, incidental, special, consequential, or exemplary damages, the value of Your Content, lost profits/revenue/customers/opportunities/goodwill, and unavailability of Services or AWS Content, subject to stated exceptions and non-waivable law.
+    Sections: 9.1; 9.2
+
+70. Question: A customer asks: Does the liability cap limit my obligation to pay AWS service fees?
+    Expected answer: No. Section 9 does not limit the customer's obligation to pay AWS for use of Services under Section 3 or any other payment obligations.
+    Sections: 9.2; 3
+
+71. Question: A customer asks: If I am in the EU under Amazon Web Services EMEA SARL, do indemnity and liability limits still apply to AWS gross negligence or willful misconduct?
+    Expected answer: For Amazon Web Services EMEA SARL customers whose Account Country is in the EU, Section 7.1 does not apply to Losses caused by AWS gross negligence or willful misconduct, and Section 9 disclaimers or caps do not exclude or limit either party's liability for gross negligence or willful misconduct.
+    Sections: 11.15(e); 7.1; 9
+
+72. Question: A customer asks: If I am in Australia and this is a consumer or small business contract, what special notice and indemnity limits apply?
+    Expected answer: For Amazon Web Services Australia Pty Ltd, Section 7.1 does not apply to Losses or damages caused by AWS gross negligence or criminal misconduct in consumer/small business contracts, and materially adverse Agreement changes under Section 10 require at least 30 days' prior notice by email or a reasonably substitutable means.
+    Sections: 11.15(a); 7.1; 10
+
+73. Question: A customer asks: If I am in Japan, can the liability disclaimer or damages cap apply to gross negligence or willful misconduct?
+    Expected answer: Japan-specific terms add that the Section 9 disclaimer or damages cap may not apply to damages caused by either party's gross negligence or willful misconduct if deemed against public policy under Article 90 of the Civil Code; the disclaimer is narrowly construed and cap may be increased minimally to avoid that result.
+    Sections: 11.15(b); 9
+
+74. Question: A customer asks: If I am in Turkey, who pays stamp tax related to the Agreement?
+    Expected answer: Turkey-specific terms add that if AWS must pay stamp tax related to the Agreement or related document, AWS may charge the customer, and the customer will pay, 50% of the stamp tax paid by AWS.
+    Sections: 11.15(c); 3.2
+
+75. Question: A customer asks: If I am under AWS India, do I pay invoices in USD or INR?
+    Expected answer: AWS India may display fees on the Site in USD or another currency, but invoices are in INR based on AWS's conversion rate on the invoice date, and the customer is liable only for the INR Equivalent Fees in each invoice.
+    Sections: 11.15(f)
+
+76. Question: A customer asks: If I am GST-registered in India, can I reject an incorrect invoice without notifying AWS?
+    Expected answer: No. If GST-registered in India, the customer must notify AWS India through AWS Customer Support before rejecting an incorrect invoice or credit note on the Invoice Management System, and agrees not to reject a correct invoice or credit note.
+    Sections: 11.15(f)
+
+77. Question: A customer asks: If my billing address is Brazil but I did not provide a valid CPF/CNPJ tax number, is Brazil my Account Country for contracting party purposes?
+    Expected answer: No. Brazil is the Account Country only with a valid Brazilian Tax Registration Number. If the billing address is in Brazil but no valid CPF/CNPJ is provided, Amazon Web Services, Inc. is the AWS Contracting Party.
+    Sections: 12 (AWS Contracting Party note)
+
+78. Question: A customer asks: If I change my Account Country, does the AWS Contracting Party change automatically?
+    Expected answer: Yes. If the customer changes Account Country to one identified with a different AWS Contracting Party, that party becomes the AWS Contracting Party without further action by either party.
+    Sections: 12 (AWS Contracting Party)
+
+79. Question: A customer asks: If there is a dispute under Amazon Web Services, Inc., can we bring a class action or demand a jury trial?
+    Expected answer: For Amazon Web Services, Inc. and other parties listed in Section 11.5(a), disputes are generally resolved by binding arbitration rather than court, proceedings are individual and not class/consolidated/representative actions, and if a claim proceeds in court both parties waive jury trial, except either party may bring suit to enjoin IP infringement or misuse.
+    Sections: 11.5(a)
+
+80. Question: A customer asks: If the dispute is about IP misuse, must it go only through arbitration?
+    Expected answer: Not necessarily. Section 11.5(a) allows either party to bring suit in court to enjoin infringement or other misuse of IP rights, and Section 11.5(g) for AWS India similarly allows injunctive relief in any court of competent jurisdiction for actual or alleged infringement of IP or proprietary rights.
+    Sections: 11.5(a); 11.5(g)
+
+81. Question: A customer asks: If the applicable party is AWS Brazil, where is arbitration held and is it confidential?
+    Expected answer: Under Section 11.5(c), disputes are resolved by ICC arbitration in the City of Sao Paulo, State of Sao Paulo, Brazil, with three arbitrators. The existence of and information about the arbitration is confidential, and Governing Courts have limited jurisdiction for commencement and interim/conservatory measures.
+    Sections: 11.5(c)
+
+82. Question: A customer asks: What happens if part of the Agreement is invalid or unenforceable?
+    Expected answer: The rest remains in full force. The invalid or unenforceable portion is interpreted to effect the original intent if possible; if not, it is severed and the rest remains effective.
+    Sections: 11.14
+
+83. Question: A customer asks: If AWS fails to enforce a provision once, is it waived forever?
+    Expected answer: No. AWS's failure to enforce a provision is not a present or future waiver and does not limit later enforcement. AWS waivers must be in writing.
+    Sections: 11.13
+
+84. Question: A customer asks: Are End Users third-party beneficiaries under the Agreement?
+    Expected answer: No. Except as set forth in Section 7, the Agreement does not create third-party beneficiary rights for non-parties.
+    Sections: 11.11; 7
+
+85. Question: A customer asks: If I use AWS for the U.S. Government and these terms do not meet federal requirements, what should I do?
+    Expected answer: The Services and AWS Content are provided as commercial items with standard rights and restrictions. If the terms fail to meet U.S. Government needs or conflict with federal law, the customer must immediately discontinue use.
+    Sections: 11.12
+
+86. Question: A customer asks: Are Account Information and Your Content the same thing?
+    Expected answer: No. Account Information is information provided for account creation or administration, such as names, usernames, phone numbers, emails, and billing information. Your Content is content transferred for processing, storage, or hosting, and computational results from it; Your Content does not include Account Information.
+    Sections: 12 (Account Information; Your Content)
+
+87. Question: A customer asks: Are Services, AWS Content, and Third-Party Content the same thing?
+    Expected answer: No. Services are services made available by AWS or affiliates and exclude Third-Party Content. AWS Content includes AWS-provided APIs, tools, sample code, templates, advice, and related materials, but not Services or Third-Party Content. Third-Party Content is content made available by a third party on the AWS Site or with the Services.
+    Sections: 12 (Service; AWS Content; Third-Party Content)
+
+88. Question: A customer asks: What documents are included in Policies?
+    Expected answer: Policies means the Acceptable Use Policy, Privacy Notice, Site Terms, Service Terms, and AWS Trademark Guidelines.
+    Sections: 12 (Policies)
+
+89. Question: A customer asks: If AWS modifies the Agreement by posting it online and I keep using Services, what happens?
+    Expected answer: The modified terms become effective upon posting, or as stated in an email notice if AWS notifies by email, and continued use of Services or AWS Content after the effective date means the customer agrees to the modified terms.
+    Sections: 10; 11.10
+
+90. Question: A customer asks: Build a timeline if AWS gives 30 days' termination notice, the customer has unpaid fees, and wants content after termination.
+    Expected answer: The Termination Date must comply with Section 5.2 notice periods. On that date rights terminate except surviving and post-termination provisions; the customer remains responsible for fees through termination and billed post-termination use. Unless AWS terminated under Section 5.2(b), AWS will not remove Your Content due to termination during the next 30 days and will allow retrieval only if all amounts due are paid.
+    Sections: 5.1; 5.2(a); 5.3(a); 5.3(b); 3
