@@ -31,8 +31,23 @@ To keep this README clean, all technical overviews, architecture decisions, and 
 - Python 3.10+
 - Node.js 18+
 
-### 1. Backend Setup
+### Quick Start (The Fast Way)
+If you already have Python and Node installed, the easiest way to run the full stack is using the root start script:
+```bash
+./start.sh
+```
+This script will concurrently boot up both the FastAPI backend and the React frontend. It will also gracefully shut them down if you hit `Ctrl+C`.
 
+**Once the servers are running, everything can be done straight from the React Web UI (`http://localhost:5173`):**
+- **Query View:** Ask questions and watch the Agentic Verification loop work.
+- **Analytics View:** Inspect your usage logs and system latencies.
+- **Evaluation View:** Review the deterministic benchmark scoring.
+
+---
+
+### Manual Setup (The Detailed Way)
+
+**1. Backend Setup**
 Navigate to the backend directory:
 ```bash
 cd app/backend
@@ -57,8 +72,7 @@ uvicorn assessment_app.main:app --reload
 ```
 The API will run at `http://localhost:8000`.
 
-### 2. Frontend Setup
-
+**2. Frontend Setup**
 Navigate to the frontend directory:
 ```bash
 cd app/frontend
