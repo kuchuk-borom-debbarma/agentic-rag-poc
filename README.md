@@ -68,6 +68,10 @@ npm run dev
 ```
 The UI will run at `http://localhost:5173`.
 
+### Using the Target Document (Local Ingestion)
+The required AWS PDF document is pre-packaged in the repository at: **`app/resources/AWS Customer Agreement.pdf`**.
+Once both servers are running, simply navigate to the frontend UI and click the "Ingest Document" button. The backend will automatically read the PDF from the `app/resources/` folder, build the SQLite relational graph, and store the embeddings in ChromaDB.
+
 ---
 
 ## 2. Model Configuration
