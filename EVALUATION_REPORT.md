@@ -69,3 +69,13 @@ Below is a raw snapshot of the first 5 individual cases executed in the suite:
 | `aws-005` | ✅ Pass | Yes | 7.12s |
 
 *Note: Case `aws-001` failed the rigid 80% overlap threshold despite generating an answer, demonstrating the strictness of the deterministic scoring engine.*
+
+---
+
+## 5. Raw Data Export
+
+For complete transparency, the full raw dataset of the latest benchmark run has been exported to CSV format. 
+
+This includes all 30 test queries, the expected golden answers, the actual LLM-generated outputs, individual latencies, and strict pass/fail flags. Reviewers are encouraged to open this file in Excel or Google Sheets to analyze the system's performance in granular detail:
+
+👉 **[View the Raw Benchmark CSV Export (`app/evaluation/benchmark_results.csv`)](app/evaluation/benchmark_results.csv)**
