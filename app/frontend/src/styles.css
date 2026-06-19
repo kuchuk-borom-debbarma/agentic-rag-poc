@@ -294,6 +294,10 @@ h3 {
   padding-right: 0.25rem;
 }
 
+.scrollableList > * {
+  flex-shrink: 0;
+}
+
 .stageSummary {
   background: #f8fafc;
   border: 1px solid #d8dde7;
@@ -840,7 +844,8 @@ th {
 }
 
 .caseList {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
