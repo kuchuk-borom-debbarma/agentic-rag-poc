@@ -34,6 +34,15 @@ class FakeGraphStore:
     def get_referenced_sections(self, chunk_ids: list[str], limit: int = 2) -> list[SourceSnippet]:
         return []
 
+    def get_parent_sections(self, chunk_ids: list[str]) -> list[SourceSnippet]:
+        return []
+
+    def get_child_sections(self, chunk_ids: list[str]) -> list[SourceSnippet]:
+        return []
+
+    def search_lexical(self, query: str, limit: int = 20) -> list[SourceSnippet]:
+        return []
+
 
 class FakeEvidenceVerifier:
     def __init__(self, is_sufficient: bool = True):

@@ -38,3 +38,39 @@ class RagIngestionResult:
     chunk_count: int
     graph_chunk_count: int
     vector_count: int
+
+
+@dataclass(frozen=True)
+class GraphNode:
+    """Small graph node payload for frontend visualization."""
+
+    id: str
+    label: str
+    kind: str
+    parent_id: str | None
+    section_id: str | None
+    text_preview: str | None
+
+
+@dataclass(frozen=True)
+class GraphEdge:
+    """Small graph edge payload for frontend visualization."""
+
+    source: str
+    target: str
+    kind: str
+
+
+@dataclass(frozen=True)
+class GraphVisualization:
+    """Frontend-ready graph data generated during ingestion."""
+
+    sections_count: int
+    chunks_count: int
+    references_count: int
+    total_nodes: int
+    total_edges: int
+    offset: int
+    limit: int
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]

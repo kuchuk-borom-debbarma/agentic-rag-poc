@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Activity, BarChart3, Database, Loader2, MessageSquare, Send } from "lucide-react";
-import { askQuestion, ingestDocument, loadAnalytics } from "./api";
+import { Activity, BarChart3, ChevronLeft, ChevronRight, Database, GitBranch, Loader2, MessageSquare, Network, Send } from "lucide-react";
+import { askQuestion, ingestDocument, loadAnalytics, loadGraph } from "./api";
 import EvaluationView from "./evaluation/EvaluationView";
+import TracePanel from "./TracePanel";
 import "./styles.css";
 
 function App() {
@@ -10,22 +11,41 @@ function App() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [graph, setGraph] = useState(null);
+  const [graphOffset, setGraphOffset] = useState(0);
+  const [graphLimit, setGraphLimit] = useState(5000);
+  const [stageRun, setStageRun] = useState(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [maxLoops, setMaxLoops] = useState(4);
 
   useEffect(() => {
     if (activeTab === "analytics") {
       refreshAnalytics();
+    }
+    if (activeTab === "graph") {
+      refreshGraph(graphOffset, graphLimit);
     }
   }, [activeTab]);
 
   async function runIngest() {
     setLoading(true);
     setStatus("");
+    setStageRun({ type: "ingest", state: "running", activeStage: 0, events: [] });
     try {
-      const result = await ingestDocument();
+      const result = await ingestDocument((event) => {
+        setStageRun((prev) => ({ 
+          ...prev, 
+          activeStage: event.stage,
+          events: [...prev.events, event] 
+        }));
+        setStatus(event.message);
+      });
+      setStageRun((prev) => ({ ...prev, state: "complete", result, activeStage: 3 }));
       setStatus(`Ingested ${result.section_count} sections, ${result.chunk_count} chunks, and ${result.graph_chunk_count} graph nodes.`);
+      await refreshGraph(0, graphLimit);
     } catch (error) {
+      setStageRun({ type: "ingest", state: "error", error: error.message });
       setStatus(error.message);
     } finally {
       setLoading(false);
@@ -39,10 +59,20 @@ function App() {
     }
     setLoading(true);
     setStatus("");
+    setStageRun({ type: "query", state: "running", query: question.trim(), activeStage: 0, events: [] });
     try {
-      const result = await askQuestion(question.trim());
+      const result = await askQuestion(question.trim(), maxLoops, (event) => {
+        setStageRun((prev) => ({ 
+          ...prev, 
+          activeStage: event.stage,
+          events: [...prev.events, event] 
+        }));
+        setStatus(event.message);
+      });
       setAnswer(result);
+      setStageRun((prev) => ({ ...prev, state: "complete", result, activeStage: 3 }));
     } catch (error) {
+      setStageRun({ type: "query", state: "error", error: error.message });
       setStatus(error.message);
     } finally {
       setLoading(false);
@@ -55,6 +85,27 @@ function App() {
     } catch (error) {
       setStatus(error.message);
     }
+  }
+
+  async function refreshGraph(offset = graphOffset, limit = graphLimit) {
+    try {
+      const nextGraph = await loadGraph(offset, limit);
+      setGraph(nextGraph);
+      setGraphOffset(nextGraph.offset);
+      setGraphLimit(nextGraph.limit);
+    } catch (error) {
+      setStatus(error.message);
+    }
+  }
+
+  async function changeGraphPage(nextOffset) {
+    await refreshGraph(Math.max(0, nextOffset), graphLimit);
+  }
+
+  async function changeGraphLimit(event) {
+    const nextLimit = Number(event.target.value);
+    setGraphLimit(nextLimit);
+    await refreshGraph(0, nextLimit);
   }
 
   return (
@@ -83,18 +134,40 @@ function App() {
           <Activity size={18} />
           Evaluation
         </button>
+        <button className={activeTab === "graph" ? "active" : ""} onClick={() => setActiveTab("graph")}>
+          <Network size={18} />
+          Graph
+        </button>
       </nav>
 
       {status && <div className="notice">{status}</div>}
 
+      {stageRun?.type === "ingest" && (
+        <section className="panel stageDock">
+          <StageTimeline run={stageRun} stages={INGESTION_STAGES} />
+        </section>
+      )}
+
       {activeTab === "chat" ? (
         <section className="panel">
+          <StageTimeline run={stageRun?.type === "query" ? stageRun : null} stages={QUERY_STAGES} />
           <form className="questionForm" onSubmit={submitQuestion}>
             <input
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Ask about the AWS Customer Agreement"
             />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0.5rem' }}>
+              <label style={{ fontSize: '12px', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>Max loops:</label>
+              <input 
+                type="number" 
+                min="1" max="10" 
+                value={maxLoops} 
+                onChange={(e) => setMaxLoops(Number(e.target.value))}
+                style={{ width: '60px', padding: '0.5rem' }}
+                title="Max verification expansion loops"
+              />
+            </div>
             <button className="iconButton primary" disabled={loading || !question.trim()} title="Ask">
               {loading ? <Loader2 className="spin" size={18} /> : <Send size={18} />}
               <span>Ask</span>
@@ -112,25 +185,327 @@ function App() {
               </article>
               <section className="sources">
                 <h2>Sources</h2>
-                {answer.sources.map((source) => (
-                  <article className="source" key={source.chunk_id}>
-                    <div className="meta">
-                      <span>Page {source.page_start}</span>
-                      <span>{source.chunk_id}</span>
-                    </div>
-                    <p>{source.text}</p>
-                  </article>
-                ))}
+                <div className="scrollableList">
+                  {answer.sources.slice(0, 10).map((source) => (
+                    <article className="source" key={source.chunk_id}>
+                      <div className="meta">
+                        <span>Page {source.page_start}</span>
+                        <span>{source.chunk_id}</span>
+                      </div>
+                      <p>{source.text}</p>
+                    </article>
+                  ))}
+                </div>
               </section>
+              <TracePanel trace={answer.trace} />
             </div>
           )}
         </section>
       ) : activeTab === "analytics" ? (
         <AnalyticsView analytics={analytics} onRefresh={refreshAnalytics} />
+      ) : activeTab === "graph" ? (
+        <GraphView
+          graph={graph}
+          offset={graphOffset}
+          limit={graphLimit}
+          onRefresh={() => refreshGraph(graphOffset, graphLimit)}
+          onPage={changeGraphPage}
+          onLimitChange={changeGraphLimit}
+        />
       ) : (
         <EvaluationView />
       )}
     </main>
+  );
+}
+
+const INGESTION_STAGES = [
+  {
+    title: "Parse Document Layout",
+    detail: "Read the PDF, identify section headings, body blocks, and legal cross-references.",
+    visual: "doc",
+  },
+  {
+    title: "Create Semantic Chunks",
+    detail: "Split section text into answer-sized chunks while keeping section lineage and references.",
+    visual: "chunks",
+  },
+  {
+    title: "Build Section Relationships",
+    detail: "Connect parent sections, child sections, and inline references so legal context stays attached.",
+    visual: "tree",
+  },
+  {
+    title: "Persist Search Graph",
+    detail: "Save hierarchy, chunk sequence, references, and embeddings into SQLite and Chroma.",
+    visual: "store",
+  },
+];
+
+const QUERY_STAGES = [
+  {
+    title: "Plan Retrieval",
+    detail: "Turn the user question into focused sub-queries and target sections.",
+    visual: "doc",
+  },
+  {
+    title: "Search Evidence",
+    detail: "Embed each sub-query, retrieve semantic matches, and collect exact section evidence.",
+    visual: "chunks",
+  },
+  {
+    title: "Verify Context",
+    detail: "Ask the verifier whether evidence is enough; expand to parents, children, neighbors, or references when needed.",
+    visual: "tree",
+  },
+  {
+    title: "Answer With Sources",
+    detail: "Generate the final answer using only retrieved evidence, then log latency and source snippets.",
+    visual: "store",
+  },
+];
+
+function StageTimeline({ run, stages }) {
+  if (!run) {
+    return null;
+  }
+  const running = run.state === "running";
+  const errored = run.state === "error";
+
+  return (
+    <section className={`stageTimeline ${run.state}`}>
+      {stages.map((stage, index) => {
+        const activeStage = run.activeStage ?? 0;
+        const state = errored && index === activeStage ? "bad" : 
+                      running && index === activeStage ? "active" : 
+                      running && index < activeStage ? "done" : 
+                      running ? "pending" : "done";
+        return (
+          <article className={`stageStep ${state}`} key={stage.title}>
+            <StageVisual type={stage.visual} active={state === "active"} />
+            <div>
+              <span>Step {index + 1}</span>
+              <h2>{stage.title}</h2>
+              <p>{stage.detail}</p>
+              <StageDataView events={run.events?.filter(e => e.stage === index)} />
+            </div>
+          </article>
+        );
+      })}
+      {run.state === "complete" && run.result?.sources && (
+        <div className="stageSummary">Collected {run.result.sources.length} source snippets in {run.result.latency_ms} ms.</div>
+      )}
+      {run.state === "complete" && run.result?.section_count && (
+        <div className="stageSummary">Stored {run.result.section_count} sections, {run.result.chunk_count} chunks, {run.result.vector_count} vectors.</div>
+      )}
+      {run.state === "error" && <div className="stageSummary errorText">{run.error}</div>}
+    </section>
+  );
+}
+
+function StageDataView({ events }) {
+  if (!events || events.length === 0) return null;
+  
+  const displayEvents = events.slice(-10).reverse();
+  
+  return (
+    <div className="stageDataView">
+      {displayEvents.map((event, i) => (
+        <div key={i} className="stageDataEvent">
+          <div className="stageDataMessage">{event.message}</div>
+          {event.data && <PrettyData payload={event.data} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PrettyData({ payload }) {
+  if (!payload || typeof payload !== "object") return null;
+  
+  return (
+    <div className="prettyData">
+      {Object.entries(payload).map(([key, value]) => (
+        <div key={key} className="prettyDataRow">
+          <span className="prettyDataKey">{key.replace(/_/g, " ")}:</span>
+          <span className="prettyDataValue">
+            {Array.isArray(value) ? (
+              <ul className="prettyDataList">
+                {value.map((v, i) => (
+                  <li key={i}>
+                    {typeof v === 'object' && v !== null ? (
+                      Object.entries(v).map(([k, val]) => (
+                        <div key={k}><strong style={{fontWeight: 500, color: 'var(--slate-500)'}}>{k}</strong>: {String(val)}</div>
+                      ))
+                    ) : (
+                      String(v)
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : typeof value === 'object' && value !== null ? (
+               Object.entries(value).map(([k, val]) => (
+                 <div key={k}><strong style={{fontWeight: 500, color: 'var(--slate-500)'}}>{k}</strong>: {String(val)}</div>
+               ))
+            ) : (
+              String(value)
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StageVisual({ type, active }) {
+  const className = `stageVisual ${active ? "pulse" : ""}`;
+  if (type === "tree") {
+    return (
+      <div className={className}>
+        <GitBranch size={28} />
+        <span />
+      </div>
+    );
+  }
+  if (type === "chunks") {
+    return (
+      <div className={className}>
+        <div className="miniChunks"><i /><i /><i /></div>
+      </div>
+    );
+  }
+  if (type === "store") {
+    return (
+      <div className={className}>
+        <Database size={28} />
+      </div>
+    );
+  }
+  return (
+    <div className={className}>
+      <MessageSquare size={28} />
+    </div>
+  );
+}
+
+function GraphView({ graph, offset, limit, onRefresh, onPage, onLimitChange }) {
+  const totalNodes = graph?.total_nodes || 0;
+  const nextOffset = offset + limit;
+  const hasNext = nextOffset < totalNodes;
+
+  return (
+    <section className="panel graphPanel">
+      <div className="graphToolbar">
+        <div className="metrics graphMetrics">
+          <Metric label="Sections" value={graph?.sections_count || 0} />
+          <Metric label="Chunks" value={graph?.chunks_count || 0} />
+          <Metric label="References" value={graph?.references_count || 0} />
+        </div>
+        <div className="graphControls">
+          <button className="iconButton" type="button" onClick={onRefresh} title="Refresh graph">
+            <Network size={18} />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {graph && (
+        <div className="notice warning" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          Warning: We are showing the full graph only because it's a small PDF. Rendering large graphs may cause performance issues.
+        </div>
+      )}
+
+      {graph ? (
+        <>
+          <div className="graphRange">
+            Showing all {graph.total_nodes} nodes and {graph.total_edges} edges.
+          </div>
+          <GraphCanvas graph={graph} />
+          <GraphLegend />
+        </>
+      ) : (
+        <div className="emptyState">Run ingestion, then refresh graph.</div>
+      )}
+    </section>
+  );
+}
+
+function GraphCanvas({ graph }) {
+  const width = 1040;
+  const height = 520;
+  const sectionNodes = graph.nodes.filter((node) => node.kind === "section");
+  const chunkNodes = graph.nodes.filter((node) => node.kind === "chunk");
+  const positions = new Map();
+
+  sectionNodes.forEach((node, index) => {
+    positions.set(node.id, pointFor(index, sectionNodes.length, 250, 190, width * 0.34, height * 0.5));
+  });
+  chunkNodes.forEach((node, index) => {
+    positions.set(node.id, pointFor(index, chunkNodes.length, 320, 220, width * 0.68, height * 0.5));
+  });
+
+  return (
+    <div className="graphCanvas" role="img" aria-label="Generated ingestion graph">
+      <svg viewBox={`0 0 ${width} ${height}`}>
+        {graph.edges.map((edge, index) => {
+          const source = positions.get(edge.source);
+          const target = positions.get(edge.target);
+          if (!source || !target) {
+            return null;
+          }
+          return (
+            <line
+              key={`${edge.source}-${edge.target}-${edge.kind}-${index}`}
+              className={`graphEdge ${edge.kind}`}
+              x1={source.x}
+              y1={source.y}
+              x2={target.x}
+              y2={target.y}
+            />
+          );
+        })}
+        {graph.nodes.map((node) => {
+          const position = positions.get(node.id);
+          if (!position) {
+            return null;
+          }
+          return (
+            <g className={`graphNode ${node.kind}`} key={node.id} transform={`translate(${position.x}, ${position.y})`}>
+              <circle r={node.kind === "section" ? 16 : 10} />
+              <text x={node.kind === "section" ? 22 : 16} y="5">{shortLabel(node.label)}</text>
+              <title>{node.text_preview || node.label}</title>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function pointFor(index, total, radiusX, radiusY, centerX, centerY) {
+  if (total <= 1) {
+    return { x: centerX, y: centerY };
+  }
+  const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
+  return {
+    x: centerX + Math.cos(angle) * radiusX,
+    y: centerY + Math.sin(angle) * radiusY,
+  };
+}
+
+function shortLabel(value) {
+  return value.length > 34 ? `${value.slice(0, 31)}...` : value;
+}
+
+function GraphLegend() {
+  return (
+    <div className="graphLegend">
+      <span><i className="sectionDot" /> Section</span>
+      <span><i className="chunkDot" /> Chunk</span>
+      <span><i className="containsLine" /> Contains</span>
+      <span><i className="referenceLine" /> References</span>
+      <span><i className="sequenceLine" /> Next chunk</span>
+    </div>
   );
 }
 

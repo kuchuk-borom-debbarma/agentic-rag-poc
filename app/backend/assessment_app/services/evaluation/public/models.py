@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from assessment_app.services.query.public.models import SourceSnippet
+from assessment_app.services.query.public.models import QueryTrace, SourceSnippet
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,7 @@ class EvaluationCaseResult:
     passed: bool
     categories: list[EvaluationCategory]
     sources: list[SourceSnippet]
+    trace: QueryTrace | None = None
 
 
 @dataclass(frozen=True)

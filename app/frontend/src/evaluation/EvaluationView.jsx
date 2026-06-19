@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { loadEvaluationRun, loadEvaluationRuns, runEvaluation } from "../api";
+import TracePanel from "../TracePanel";
 
 const CATEGORY_ICONS = {
   retrieval: Target,
@@ -51,10 +52,17 @@ function EvaluationView() {
     setStatus("");
     try {
       const parsedTopK = topK ? Number(topK) : undefined;
-      const result = await runEvaluation(parsedTopK);
+      const result = await runEvaluation(parsedTopK, (progress) => {
+        let displayStatus = `${progress.message} (${progress.completed}/${progress.total})`;
+        if (progress.data && progress.data.query_event) {
+          displayStatus += `\n↳ ${progress.data.query_event.message}`;
+        }
+        setStatus(displayStatus);
+      });
       setDetail(result);
       setExpandedCases(new Set());
       setHistory(await loadEvaluationRuns());
+      setStatus("Evaluation completed successfully.");
     } catch (error) {
       setStatus(error.message);
     } finally {
@@ -100,7 +108,7 @@ function EvaluationView() {
         </label>
         <button className="iconButton primary" disabled={loading} title="Run benchmark">
           {loading ? <Loader2 className="spin" size={18} /> : <Activity size={18} />}
-          <span>Run all 30</span>
+          <span>Run all</span>
         </button>
         <button className="iconButton" type="button" onClick={refreshHistory} disabled={loading} title="Refresh history">
           <RefreshCw size={18} />
@@ -108,7 +116,7 @@ function EvaluationView() {
         </button>
       </form>
 
-      {status && <div className="notice">{status}</div>}
+      {status && <div className="notice" style={{ whiteSpace: "pre-wrap" }}>{status}</div>}
 
       {detail ? (
         <div className="evaluationResult">
@@ -154,41 +162,46 @@ function RunHistory({ history, activeRunId, onSelect }) {
   return (
     <article className="tableCard evaluationHistory">
       <h2>Previous Runs</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Run</th>
-            <th>Cases</th>
-            <th>Overall</th>
-            <th>Retrieval</th>
-            <th>Answer</th>
-            <th>System</th>
-            <th>Avg Latency</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((run) => (
-            <tr key={run.run_id} className={run.run_id === activeRunId ? "activeRow" : ""}>
-              <td>
-                <button className="linkButton" type="button" onClick={() => onSelect(run.run_id)}>
-                  {formatDate(run.created_at)}
-                </button>
-              </td>
-              <td>{run.case_count}</td>
-              <td>{percent(run.overall_score)}</td>
-              <td>{percent(run.retrieval_score)}</td>
-              <td>{percent(run.answer_score)}</td>
-              <td>{percent(run.system_score)}</td>
-              <td>{Math.round(run.average_latency_ms)} ms</td>
-            </tr>
-          ))}
-          {history.length === 0 && (
+      <div className="scrollableList">
+        <table>
+          <thead>
             <tr>
-              <td colSpan="7">No benchmark runs yet.</td>
+              <th>Run</th>
+              <th>Cases</th>
+              <th>Overall</th>
+              <th>Retrieval</th>
+              <th>Answer</th>
+              <th>System</th>
+              <th>Avg Latency</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {[...history]
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .slice(0, 10)
+              .map((run) => (
+              <tr key={run.run_id} className={run.run_id === activeRunId ? "activeRow" : ""}>
+                <td>
+                  <button className="linkButton" type="button" onClick={() => onSelect(run.run_id)}>
+                    {formatDate(run.created_at)}
+                  </button>
+                </td>
+                <td>{run.case_count}</td>
+                <td>{percent(run.overall_score)}</td>
+                <td>{percent(run.retrieval_score)}</td>
+                <td>{percent(run.answer_score)}</td>
+                <td>{percent(run.system_score)}</td>
+                <td>{Math.round(run.average_latency_ms)} ms</td>
+              </tr>
+            ))}
+            {history.length === 0 && (
+              <tr>
+                <td colSpan="7">No benchmark runs yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </article>
   );
 }
@@ -197,7 +210,7 @@ function CaseResults({ cases, expandedCases, onToggle }) {
   return (
     <article className="tableCard caseResults">
       <h2>Case Results</h2>
-      <div className="caseList">
+      <div className="caseList scrollableList">
         {cases.map((caseResult) => {
           const isExpanded = expandedCases.has(caseResult.case.id);
           return (
@@ -256,16 +269,20 @@ function CaseDetail({ caseResult }) {
 
       <section className="sources evaluationSources">
         <h3>Sources</h3>
-        {caseResult.sources.map((source) => (
-          <article className="source" key={source.chunk_id}>
-            <div className="meta">
-              <span>{source.section_number === "front_matter" ? "Front Matter" : `Section ${source.section_number}`}</span>
-              <span>{source.source_type}</span>
-            </div>
-            <p>{source.text}</p>
-          </article>
-        ))}
+        <div className="scrollableList">
+          {caseResult.sources.slice(0, 10).map((source) => (
+            <article className="source" key={source.chunk_id}>
+              <div className="meta">
+                <span>{source.section_number === "front_matter" ? "Front Matter" : `Section ${source.section_number}`}</span>
+                <span>{source.source_type}</span>
+              </div>
+              <p>{source.text}</p>
+            </article>
+          ))}
+        </div>
       </section>
+
+      <TracePanel trace={caseResult.trace} />
     </div>
   );
 }

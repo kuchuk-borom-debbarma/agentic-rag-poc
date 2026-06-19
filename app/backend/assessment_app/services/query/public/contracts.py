@@ -3,6 +3,7 @@
 Only this file (and models.py / errors.py) may be imported by routes, other services, or config.
 """
 
+import typing
 from typing import Protocol
 
 from assessment_app.services.query.public.models import AskResult
@@ -15,8 +16,9 @@ class QueryService(Protocol):
         self,
         query: str,
         top_k: int | None = None,
+        max_loops: int = 4,
         log_query: bool = True,
-    ) -> AskResult:
+    ) -> typing.Iterable[dict[str, typing.Any]]:
         """Search the vector store and generate a grounded answer.
 
         Args:

@@ -1,6 +1,7 @@
 """Default implementation of the hierarchical parsing ingestion stage."""
 
 from dataclasses import replace
+import typing
 
 from assessment_app.services.rag.internal.ingestion.models import ChunkedContent, Section
 from assessment_app.services.rag.internal.ingestion.parser import HierarchicalAwareParser
@@ -36,13 +37,24 @@ class DefaultSemanticChunkingService:
         self._chunker = chunker
         self._embedding_client = embedding_client
 
-    def chunk(self, sections: list[Section]) -> list[ChunkedContent]:
+    def chunk(self, sections: list[Section]) -> typing.Generator[dict[str, typing.Any], None, list[ChunkedContent]]:
         """Return semantic chunks with embeddings calculated once."""
-        chunks = self._chunker.chunk(sections)
+        chunks = yield from self._chunker.chunk(sections)
         if not chunks:
             return []
 
-        embeddings = self._embedding_client.embed_documents([chunk.text for chunk in chunks])
+        texts = [chunk.text for chunk in chunks]
+        batch_size = 50
+        embeddings = []
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i : i + batch_size]
+            yield {
+                "type": "progress", 
+                "stage": 1, 
+                "message": f"Calculating embeddings for batch {i//batch_size + 1}...",
+                "data": {"embedding_progress": f"Vectorizing chunks {i+1} to {min(i + batch_size, len(texts))} out of {len(texts)}"}
+            }
+            embeddings.extend(self._embedding_client.embed_documents(batch_texts))
         return [
             replace(chunk, embedding=embedding)
             for chunk, embedding in zip(chunks, embeddings, strict=True)

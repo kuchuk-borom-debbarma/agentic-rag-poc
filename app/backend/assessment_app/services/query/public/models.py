@@ -54,6 +54,43 @@ class VerificationResult:
 
 
 @dataclass(frozen=True)
+class TraceCandidate:
+    """Bounded retrieval candidate detail for UI/debug traces."""
+
+    chunk_id: str
+    section_number: str
+    section_title: str
+    source_type: str
+    score: float | None
+    text_preview: str
+
+
+@dataclass(frozen=True)
+class RetrievalStepTrace:
+    """Trace for one planned retrieval query."""
+
+    query_id: str
+    query: str
+    expanded_query: str
+    explicit_sections: list[str]
+    validated_sections: list[str]
+    vector_candidates: list[TraceCandidate]
+    lexical_candidates: list[TraceCandidate]
+    reranked_candidates: list[TraceCandidate]
+    verifier: VerificationResult | None = None
+    expansion_actions: list[str] | None = None
+
+
+@dataclass(frozen=True)
+class QueryTrace:
+    """Bounded trace for the query pipeline."""
+
+    original_query: str
+    retrieval_steps: list[RetrievalStepTrace]
+    final_sources: list[TraceCandidate]
+
+
+@dataclass(frozen=True)
 class QueryLogEntry:
     query: str
     answer: str
@@ -70,3 +107,4 @@ class AskResult:
     answer_found: bool
     sources: list[SourceSnippet]
     latency_ms: int
+    trace: QueryTrace | None = None

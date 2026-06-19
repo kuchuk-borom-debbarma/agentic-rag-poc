@@ -22,7 +22,7 @@ else
     echo "Failed to find venv, you may need to run setup."
     exit 1
 fi
-uvicorn assessment_app.main:app --reload &
+uvicorn assessment_app.main:app --reload --reload-exclude 'data/*' &
 BACKEND_PID=$!
 cd ..
 

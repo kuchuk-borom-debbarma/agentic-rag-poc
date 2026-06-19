@@ -327,6 +327,25 @@ Returned by:
 POST /ask
 ```
 
+### `QueryTrace`
+
+Optional bounded debug data returned by ask and evaluation responses:
+
+```text
+original query
+planned retrieval queries
+expanded query text
+exact/validated sections
+vector candidates
+lexical candidates
+reranked candidates
+verifier result
+expansion actions
+final sources
+```
+
+The frontend renders this in a collapsible Retrieval Trace panel.
+
 ### `RetrievalQuery` and `QueryPlan`
 
 Represent the planned query branches before retrieval:
@@ -1043,7 +1062,9 @@ Flow:
 for each retrieval query
 -> embed query
 -> semantic vector search
--> add exact section chunks
+-> SQLite lexical search
+-> add explicit or validated exact section chunks
+-> rerank candidates to final evidence budget
 -> add neighbor chunks
 -> add referenced sections when needed
 -> dedupe and sort by document order
@@ -1056,6 +1077,8 @@ I could not find this in the AWS Customer Agreement.
 ```
 
 `answer_found()` checks for this message in model output.
+
+Hybrid retrieval exists because vector similarity alone missed several direct clauses when user wording differed from legal wording. The reranker now boosts exact legal phrases and demotes front matter, broad boilerplate, or indirect disclaimer text when the question asks for a direct obligation, right, or term.
 
 ## Routes
 
@@ -1344,6 +1367,7 @@ Functions:
 
 - `ingestDocument()`
 - `askQuestion(query)`
+- `loadGraph(offset, limit)`
 - `loadAnalytics()`
 - `runEvaluation(topK)`
 - `loadEvaluationRuns()`
@@ -1367,10 +1391,11 @@ Owns UI state.
 
 State:
 
-- active tab: chat, analytics, or evaluation
+- active tab: chat, analytics, evaluation, or graph
 - question input
 - latest answer
 - analytics payload
+- paged graph payload
 - status/errors
 - loading flag
 
@@ -1381,6 +1406,16 @@ question input
 -> Ask button
 -> answer card
 -> source cards
+-> retrieval trace
+```
+
+Graph tab:
+
+```text
+section/chunk/reference metrics
+-> paged SVG graph
+-> node page size controls
+-> legend
 ```
 
 Analytics tab:
@@ -1617,7 +1652,6 @@ Known limits:
 - no user auth
 - no file upload UI
 - no streaming answer
-- no reranking
 - no multi-document filtering
 - no deployment config yet
 - no LLM-as-judge evaluation yet

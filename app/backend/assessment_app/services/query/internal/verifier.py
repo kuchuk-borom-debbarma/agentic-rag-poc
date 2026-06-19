@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 class _VerificationResultSchema(BaseModel):
     is_sufficient: bool = Field(description="Is the evidence sufficient to answer the query?")
-    needs_references: bool = Field(description="Are there referenced sections missing?")
-    needs_parents: bool = Field(description="Is the context lacking parent information?")
-    needs_children: bool = Field(description="Is the context lacking child sub-point details?")
-    needs_neighbors: bool = Field(description="Does the text cut off and need neighbors?")
-    issues: List[str] = Field(description="Specific missing information if not sufficient")
+    needs_references: bool = Field(default=False, description="Are there referenced sections missing?")
+    needs_parents: bool = Field(default=False, description="Is the context lacking parent information?")
+    needs_children: bool = Field(default=False, description="Is the context lacking child sub-point details?")
+    needs_neighbors: bool = Field(default=False, description="Does the text cut off and need neighbors?")
+    issues: List[str] = Field(default_factory=list, description="Specific missing information if not sufficient")
 
 
 class LLMEvidenceVerifier:
