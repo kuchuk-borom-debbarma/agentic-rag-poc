@@ -73,7 +73,7 @@ Any provider that exposes `/embeddings` and `/chat/completions` can be swapped i
 ## API Flow
 
 1. `POST /api/v1/ingest` rebuilds configured PDF ingestion data into SQLite graph maps and the dedicated RAG Chroma collection.
-2. `POST /api/v1/ask` plans retrieval queries, retrieves semantic matches, expands evidence with exact sections, neighbor chunks, and referenced sections, asks the chat model to answer only from evidence, returns answer plus sources, and logs usage to SQLite.
+2. `POST /api/v1/ask` plans retrieval queries, expands contract-language synonyms, retrieves semantic and SQLite lexical matches, reranks evidence with exact-section validation, expands context with graph relationships, asks the chat model to answer only from direct evidence, returns answer plus sources and optional trace data, and logs usage to SQLite.
 3. `GET /api/v1/analytics` returns SQL-backed usage metrics for the dashboard.
 4. `POST /api/v1/evaluation/runs` runs the 30-case benchmark through the same query path without analytics logging and stores the run in SQLite.
 5. `GET /api/v1/evaluation/runs` and `GET /api/v1/evaluation/runs/{run_id}` show previous benchmark runs and per-case details.
@@ -93,7 +93,11 @@ Why:
 - It keeps the answer prompt compact.
 - It is easy to explain and tune in the demo.
 
-The app also expands retrieved evidence with one neighbor chunk by default (`DEFAULT_NEIGHBORS=1`) and exact section lookup when the query mentions a section number.
+The app also uses hybrid retrieval. Chroma handles semantic similarity, SQLite handles exact section and lexical search, and a deterministic reranker keeps the final evidence budget focused. This protects against failures where Section 8 disclaimer text beats Section 1.3 security text, Section 1.4/6.4 beats Section 6.1 ownership text, or boilerplate beats Section 5.1 term text.
+
+Ask responses include optional retrieval trace data for the frontend. The trace shows planned subqueries, expanded query text, vector candidates, lexical candidates, reranked candidates, verifier decisions, and expansion actions.
+
+The Graph tab visualizes stored ingestion graph data with pagination. The backend defaults to 120 nodes per page and caps requests at 300 nodes to keep the browser responsive.
 
 ## Analytics
 

@@ -258,6 +258,8 @@ CREATE TABLE chunks (
 ### Key Points
 - SQLite is fast, local, and requires zero setup.
 - Relational joins and indexed lookups provide sub-millisecond retrieval of parent or neighbor chunks.
+- SQLite also powers lexical retrieval over chunk text, section titles, parent titles, and section numbers.
+- Source snippets use document/section-aware ordering so citations are stable across sections.
 - **What is not tackled:** Multi-document graphs. The current SQLite schema assumes a continuous linear sequence for a single document.
 
 ---
@@ -297,4 +299,5 @@ type VectorStoreRecord = {
 ### Key Points
 - ChromaDB handles purely semantic retrieval.
 - Crucially, the `id` in ChromaDB maps exactly to `chunk_id` in SQLite. When ChromaDB finds a semantic match, the system uses that `id` to instantly pull the full relational context from SQLite.
+- The frontend Graph tab reads paged graph visualization data from the ingestion service. The endpoint defaults to 120 nodes, caps at 300, and only returns edges whose endpoints are visible in the current page.
 - **What is not tackled:** Incremental vector upserts. The current endpoint drops and recreates the collection entirely.

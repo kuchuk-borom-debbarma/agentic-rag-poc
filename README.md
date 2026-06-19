@@ -48,6 +48,8 @@ This script will concurrently boot up both the FastAPI backend and the React fro
 
 **Once the servers are running, everything can be done straight from the React Web UI (`http://localhost:5173`):**
 - **Query View:** Ask questions and watch the Agentic Verification loop work.
+- **Retrieval Trace:** Inspect planned subqueries, hybrid candidates, reranked evidence, and verifier decisions for each answer.
+- **Graph View:** Page through the generated section/chunk/reference graph without loading the entire graph into the browser.
 - **Analytics View:** Inspect your usage logs and system latencies.
 - **Evaluation View:** Review the deterministic benchmark scoring.
 
@@ -121,3 +123,6 @@ Validate python syntax:
 ```bash
 python -m compileall assessment_app
 ```
+
+### Retrieval Robustness
+The query path uses hybrid retrieval: semantic vector search, SQLite lexical search, deterministic section extraction, query expansion for contract wording, reranking, and fail-closed evidence verification. This is designed to handle wording gaps such as "secure customer content" vs. Section 1.3, "ownership rights" vs. Section 6.1, and "term start/end" vs. Section 5.1.

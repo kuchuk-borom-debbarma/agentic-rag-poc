@@ -44,6 +44,7 @@ class DefaultBenchmarkScorer:
             passed=passed,
             categories=categories,
             sources=result.sources,
+            trace=result.trace,
         )
 
     def summarize_run(

@@ -16,6 +16,10 @@ export async function loadAnalytics() {
   return request("/api/v1/analytics");
 }
 
+export async function loadGraph(offset = 0, limit = 120) {
+  return request(`/api/v1/ingest/graph?offset=${offset}&limit=${limit}`);
+}
+
 export async function runEvaluation(topK) {
   return request("/api/v1/evaluation/runs", {
     method: "POST",

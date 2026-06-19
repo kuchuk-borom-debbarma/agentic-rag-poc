@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { loadEvaluationRun, loadEvaluationRuns, runEvaluation } from "../api";
+import TracePanel from "../TracePanel";
 
 const CATEGORY_ICONS = {
   retrieval: Target,
@@ -266,6 +267,8 @@ function CaseDetail({ caseResult }) {
           </article>
         ))}
       </section>
+
+      <TracePanel trace={caseResult.trace} />
     </div>
   );
 }

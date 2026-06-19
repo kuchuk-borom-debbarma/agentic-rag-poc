@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import json
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,14 @@ from assessment_app.services.rag.internal.ingestion.models import (
 
 
 from assessment_app.services.query.public.models import SourceSnippet
+
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_STOP_WORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how",
+    "if", "in", "is", "it", "of", "on", "or", "the", "this", "to", "under",
+    "what", "when", "who", "will", "with", "you", "your", "does", "do",
+}
+
 
 class SqliteGraphStore:
     """Persist graph maps in one local SQLite file."""
@@ -156,6 +165,64 @@ class SqliteGraphStore:
                 
         return self._fetch_snippets(result_chunk_ids, "child")
 
+    def search_lexical(self, query: str, limit: int = 20) -> list[SourceSnippet]:
+        """Search chunks by lexical overlap against text and section titles."""
+        query_tokens = _tokens(query)
+        if not query_tokens or limit <= 0:
+            return []
+
+        rows: list[sqlite3.Row]
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    c.chunk_id,
+                    c.text,
+                    s.title AS section_title,
+                    c.section_id,
+                    ps.title AS parent_section_title
+                FROM graph_chunks c
+                JOIN graph_sections s ON c.section_id = s.section_id
+                LEFT JOIN graph_sections ps ON s.parent_section_id = ps.section_id
+                """
+            ).fetchall()
+
+        scored: list[tuple[float, str]] = []
+        query_phrase = " ".join(query_tokens)
+        for row in rows:
+            haystack = " ".join(
+                str(value or "")
+                for value in (
+                    row["section_id"].replace("section_", "").replace("_", "."),
+                    row["section_title"],
+                    row["parent_section_title"],
+                    row["text"],
+                )
+            )
+            haystack_tokens = _tokens(haystack)
+            if not haystack_tokens:
+                continue
+
+            overlap = query_tokens & haystack_tokens
+            if not overlap:
+                continue
+
+            score = float(len(overlap) * 4)
+            normalized_haystack = " ".join(haystack_tokens)
+            for phrase in _important_phrases(query_phrase):
+                if phrase in normalized_haystack:
+                    score += 10.0
+            if row["section_title"] and _tokens(row["section_title"]) & query_tokens:
+                score += 6.0
+            if row["section_id"].replace("section_", "").replace("_", ".") in query:
+                score += 12.0
+            scored.append((score, row["chunk_id"]))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        snippets = self._fetch_snippets([chunk_id for _, chunk_id in scored[:limit]], "lexical")
+        scores = {chunk_id: score for score, chunk_id in scored[:limit]}
+        return [replace(snippet, score=round(scores.get(snippet.chunk_id, 0.0), 3)) for snippet in snippets]
+
     def _fetch_snippets(self, chunk_ids: list[str], source_type: str) -> list[SourceSnippet]:
         if not chunk_ids:
             return []
@@ -163,7 +230,7 @@ class SqliteGraphStore:
         with self._connect() as conn:
             placeholders = ",".join("?" * len(chunk_ids))
             query = f"""
-                SELECT 
+                SELECT
                     c.chunk_id, c.text, c.section_id, c.layout_index, c.chunk_index,
                     s.title AS section_title, s.parent_section_id,
                     ps.title AS parent_section_title
@@ -171,7 +238,6 @@ class SqliteGraphStore:
                 JOIN graph_sections s ON c.section_id = s.section_id
                 LEFT JOIN graph_sections ps ON s.parent_section_id = ps.section_id
                 WHERE c.chunk_id IN ({placeholders})
-                ORDER BY c.layout_index, c.chunk_index
             """
             rows = conn.execute(query, chunk_ids).fetchall()
             
@@ -200,11 +266,11 @@ class SqliteGraphStore:
                     parent_section_id=pid,
                     parent_section_number=pnum,
                     parent_section_title=row["parent_section_title"],
-                    order=row["layout_index"] * 1000 + row["chunk_index"],
+                    order=_section_order(sid) + row["layout_index"] * 1000 + row["chunk_index"],
                     referenced_section_ids=refs,
                     source_type=source_type
                 ))
-            return snippets
+            return sorted(snippets, key=lambda snippet: snippet.order)
 
     def replace_graph(self, graph: GraphMaps) -> None:
         """Atomically replace all stored graph maps."""
@@ -460,3 +526,37 @@ def _chunk_from_payload(payload: dict[str, Any]) -> ChunkedContent:
         text=payload["text"],
         references=[Reference(**reference) for reference in payload["references"]],
     )
+
+
+def _tokens(value: str) -> set[str]:
+    return {token for token in _TOKEN_RE.findall(value.lower()) if token not in _STOP_WORDS and len(token) > 1}
+
+
+def _important_phrases(query_phrase: str) -> list[str]:
+    phrases = []
+    for phrase in (
+        "your content",
+        "effective date",
+        "remain in effect",
+        "obtain no rights",
+        "reasonable appropriate measures",
+        "service level agreement",
+        "termination date",
+    ):
+        if phrase in query_phrase:
+            phrases.append(phrase)
+    return phrases
+
+
+def _section_order(section_id: str) -> int:
+    if section_id == "section_front_matter":
+        return 0
+    if not section_id.startswith("section_"):
+        return 9_000_000
+    parts = section_id.replace("section_", "").split("_")
+    order = 0
+    for index, part in enumerate(parts[:4]):
+        if not part.isdigit():
+            return 9_000_000
+        order += int(part) * (100 ** (3 - index))
+    return order * 100_000

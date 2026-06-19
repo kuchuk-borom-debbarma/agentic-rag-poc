@@ -4,11 +4,13 @@ Depends on the QueryService contract only.
 No try/except — global exception handlers map domain errors to HTTP.
 """
 
+from dataclasses import asdict
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from assessment_app.config.dependencies import QueryServiceDep
-from assessment_app.routes.dtos import SourceResponse
+from assessment_app.routes.dtos import QueryTraceResponse, SourceResponse
 
 router = APIRouter()
 
@@ -23,6 +25,7 @@ class AskResponse(BaseModel):
     answer_found: bool
     latency_ms: int
     sources: list[SourceResponse]
+    trace: QueryTraceResponse | None = None
 
 
 @router.post("", response_model=AskResponse)
@@ -34,4 +37,5 @@ async def ask(request: AskRequest, service: QueryServiceDep) -> AskResponse:
         answer_found=result.answer_found,
         latency_ms=result.latency_ms,
         sources=[SourceResponse(**source.__dict__) for source in result.sources],
+        trace=QueryTraceResponse(**asdict(result.trace)) if result.trace else None,
     )

@@ -69,13 +69,16 @@ type RetrievalQuery = {
 ## Stage 2: Initial Evidence Collection
 
 ### The Problem
-Before we can evaluate context, we need a baseline of potentially relevant chunks. Relying purely on semantic vector search might miss explicit user requests for specific clauses. We need a dual-pronged atomic search mechanism.
+Before we can evaluate context, we need a baseline of potentially relevant chunks. Relying purely on semantic vector search can miss exact clauses when user wording differs from contract wording. For example, "promise about securing customer content" may rank the Section 8 disclaimer above Section 1.3 unless we add lexical and legal-phrase signals.
 
 ### Quick Example
 User Query: "According to Section 2.1, what is the fee?"
 Action: 
-1. `Semantic Search` for "late fee penalty".
-2. `Exact Section Search` fetching all chunks explicitly tagged as `Section 2.1`.
+1. Extract explicit section references from the original and planned query.
+2. Expand contract-language synonyms before retrieval.
+3. Run semantic vector search and SQLite lexical search.
+4. Merge exact-section, lexical, and vector candidates.
+5. Rerank to the final evidence budget.
 
 ### The Data Structure
 ```typescript
@@ -112,8 +115,10 @@ type SourceSnippet = {
 ```
 
 ### Key Points
-- The collector queries ChromaDB for semantic hits and SQLite for exact graph hits simultaneously.
-- All retrieved snippets are merged and deduplicated, keeping the highest priority `sourceType`.
+- The collector queries ChromaDB for semantic hits and SQLite for exact graph and lexical hits.
+- LLM-planned `targetSections` are treated as hints. They are fetched only if explicit or validated by title/text overlap.
+- The reranker boosts direct section/title/phrase matches and demotes front matter or indirect disclaimer evidence.
+- Fixed failure classes include Section 8 beating Section 1.3, Section 1.4/6.4 beating Section 6.1, and agreement boilerplate beating Section 5.1.
 
 ---
 
@@ -160,6 +165,7 @@ type VerificationResult = {
 - A lightweight LLM judge returns strict boolean flags directing the system on *how* to expand the graph (`needsParents`, `needsNeighbors`).
 - The SQLite edges (`parentSectionId`, `nextChunkId`) are queried instantly to fetch exactly what surrounded the retrieved text in the original document.
 - This creates a `while` loop (capped at a max retry limit) until `isSufficient: true`.
+- Verifier failures fail closed. If JSON parsing or model calls fail, evidence is treated as insufficient rather than accepted.
 - **What is not tackled:** Infinite semantic drift. We strictly limit expansion hops.
 
 ---
@@ -203,7 +209,9 @@ type AskResult = {
 
 ### Key Points
 - The prompt enforces strict grounding.
+- The answer prompt requires direct evidence. Related but indirect evidence must produce the standard no-answer message.
 - The `AskResult` returns the exact sources used, so the frontend UI can build clickable citations.
+- `AskResult.trace` optionally returns planned queries, candidate pools, reranked candidates, verifier decisions, and expansion actions for debugging.
 
 ---
 

@@ -66,8 +66,9 @@ class SqliteEvaluationRepository:
                     expected_section_numbers_json, answer_type, tags_json,
                     answer, answer_found, retrieved_section_numbers_json,
                     latency_ms, passed, categories_json, sources_json
+                    , trace_json
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     (
@@ -86,6 +87,7 @@ class SqliteEvaluationRepository:
                         int(case_result.passed),
                         _dump_categories(case_result.categories),
                         json.dumps([asdict(source) for source in case_result.sources]),
+                        json.dumps(asdict(case_result.trace)) if case_result.trace else None,
                     )
                     for position, case_result in enumerate(detail.cases)
                 ],
@@ -170,10 +172,17 @@ class SqliteEvaluationRepository:
                     passed INTEGER NOT NULL,
                     categories_json TEXT NOT NULL,
                     sources_json TEXT NOT NULL,
+                    trace_json TEXT,
                     FOREIGN KEY (run_id) REFERENCES evaluation_runs(run_id)
                 );
                 """
             )
+            columns = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(evaluation_case_results)").fetchall()
+            }
+            if "trace_json" not in columns:
+                conn.execute("ALTER TABLE evaluation_case_results ADD COLUMN trace_json TEXT")
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self._sqlite_path)
@@ -218,6 +227,7 @@ def _case_result_from_row(row: sqlite3.Row) -> EvaluationCaseResult:
         passed=bool(row["passed"]),
         categories=_categories_from_json(row["categories_json"]),
         sources=[SourceSnippet(**payload) for payload in json.loads(row["sources_json"])],
+        trace=_trace_from_json(row["trace_json"]) if "trace_json" in row.keys() and row["trace_json"] else None,
     )
 
 
@@ -237,6 +247,36 @@ def _categories_from_json(value: str) -> list[EvaluationCategory]:
         )
         for category in categories
     ]
+
+
+def _trace_from_json(value: str):
+    from assessment_app.services.query.public.models import (
+        QueryTrace,
+        RetrievalStepTrace,
+        TraceCandidate,
+        VerificationResult,
+    )
+
+    payload = json.loads(value)
+    return QueryTrace(
+        original_query=payload["original_query"],
+        retrieval_steps=[
+            RetrievalStepTrace(
+                query_id=step["query_id"],
+                query=step["query"],
+                expanded_query=step["expanded_query"],
+                explicit_sections=step["explicit_sections"],
+                validated_sections=step["validated_sections"],
+                vector_candidates=[TraceCandidate(**item) for item in step["vector_candidates"]],
+                lexical_candidates=[TraceCandidate(**item) for item in step["lexical_candidates"]],
+                reranked_candidates=[TraceCandidate(**item) for item in step["reranked_candidates"]],
+                verifier=VerificationResult(**step["verifier"]) if step.get("verifier") else None,
+                expansion_actions=step.get("expansion_actions"),
+            )
+            for step in payload["retrieval_steps"]
+        ],
+        final_sources=[TraceCandidate(**item) for item in payload["final_sources"]],
+    )
 
 
 _: EvaluationRunRepository = SqliteEvaluationRepository.__new__(SqliteEvaluationRepository)  # type: ignore[assignment]

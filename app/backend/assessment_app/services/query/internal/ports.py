@@ -53,6 +53,10 @@ class GraphStore(Protocol):
         """Fetch chunks from the child sections of the given chunks."""
         ...
 
+    def search_lexical(self, query: str, limit: int = 20) -> list[SourceSnippet]:
+        """Return chunks matching query text/title/section terms."""
+        ...
+
 
 class EvidenceVerifier(Protocol):
     """Self-reflective RAG verifier."""
