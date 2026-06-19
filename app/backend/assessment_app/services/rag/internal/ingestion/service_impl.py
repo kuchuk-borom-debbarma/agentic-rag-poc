@@ -42,7 +42,12 @@ class DefaultSemanticChunkingService:
         if not chunks:
             return []
 
-        embeddings = self._embedding_client.embed_documents([chunk.text for chunk in chunks])
+        texts = [chunk.text for chunk in chunks]
+        batch_size = 50
+        embeddings = []
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i : i + batch_size]
+            embeddings.extend(self._embedding_client.embed_documents(batch_texts))
         return [
             replace(chunk, embedding=embedding)
             for chunk, embedding in zip(chunks, embeddings, strict=True)
