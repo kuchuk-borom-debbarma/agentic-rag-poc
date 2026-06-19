@@ -23,46 +23,37 @@ This report details the internal mechanics of the system across five core domain
 
 ## 2. RAG Ingestion Pipeline
 
-### The Problem
-Fixed-size text splitters blindly tear sentences in half and sever contextual relationships (e.g., separating a bullet point from its parent heading). This destroys the semantic value of the text before it even reaches the vector database.
+Rather than blindly splitting strings, the Ingestion Pipeline acts as a deterministic compiler, breaking the document into a structural hierarchy before vectorization. It operates in five distinct stages:
 
-### Quick Example
-```text
-Section 2.1 covers late payments. A 5% fee is applied.
-```
-*Bad Chunking:* `Section 2.1 covers late pay` | `ments. A 5% fee is applied.`
-*Good Semantic Chunking:* `Section 2.1 covers late payments.` | `A 5% fee is applied.`
+### Stage A: Hierarchical Aware Parsing
+**The Problem:** Documents contain content, subsections, and inline references. Standard text splitters read this as a flat string, destroying the structure.
+**The Data Structure:** The `HierarchicalAwareParser` builds an internal layout tree, separating content blocks from inline section references.
+**Mapped Example:** "See Section 2 for details" is resolved from a loose textual string into an exact pointer `{"type": "section-ref", "sectionId": "2"}`.
 
-### The Data Structure
-The `HierarchicalAwareParser` builds an internal layout tree, which the `SemanticChunker` then splits natively at sentence boundaries.
+### Stage B: Semantic Chunking
+**The Problem:** Fixed-size chunking (e.g., every 500 characters) tears sentences in half and invalidates reference index offsets.
+**Key Point:** We split exclusively at punctuation boundaries (`_SENTENCE_RE`), dynamically grouping sentences up to a `max_chars=300` threshold. Every chunk permanently inherits its parent's context natively.
+
+### Stage C: Graph Navigation Building
+**The Problem:** At query time, fetching the chunks immediately before/after a retrieved chunk via semantic search is slow and inaccurate.
+**The Data Structure:** The pipeline builds a deterministic linked list:
 ```typescript
-type ChunkedContent = {
+type DocumentChunk = {
   chunkId: string;
-  text: string;
-  metadata: {
-    parent_section_id: string;
-    parent_section_title: string;
-  };
+  parentSectionId: string | null;
+  previousChunkId: string | null;
+  nextChunkId: string | null;
 };
 ```
+**Mapped Example:** Chunk 1 natively points to `nextChunkId: "chunk_2"`.
 
-### Mapped Example
-Every chunk permanently inherits its parent's context natively.
-```json
-{
-  "chunkId": "chunk_42",
-  "text": "A 1.5% penalty applies per month.",
-  "metadata": {
-    "parent_section_id": "section_2_payment",
-    "parent_section_title": "Late Fees"
-  }
-}
-```
+### Stage D: Graph Persistence (SQLite)
+**The Problem:** We need a lightweight way to store and query these highly connected relationships without the overhead of a Neo4j database.
+**Key Point:** Relational joins and indexed lookups provide sub-millisecond retrieval of parent or neighbor chunks. It also powers fast lexical search over section titles and chunk text.
 
-### Key Points
-- Sentences are kept completely intact. We split exclusively at punctuation boundaries (`_SENTENCE_RE`), dynamically grouping them up to a `max_chars=300` threshold.
-- Because we split semantically, we require **zero character overlap**.
-- **Dual Persistence:** The dense vector embeddings are saved in **ChromaDB**, while the relational edges (`nextChunkId`, `parentSectionId`) are mapped into a **SQLite Graph Store**.
+### Stage E: Vector Persistence (ChromaDB)
+**The Problem:** SQLite handles deterministic relationships, but cannot perform semantic similarity search.
+**Key Point:** Dense vector embeddings are saved in **ChromaDB**. The ingestion pipeline batches embedding generation requests to prevent local LLM servers like Ollama from crashing under high parallel load. Crucially, the `id` in ChromaDB maps exactly to `chunk_id` in SQLite, allowing instant cross-referencing.
 
 ---
 
