@@ -294,7 +294,7 @@ function StageTimeline({ run, stages }) {
 function StageDataView({ events }) {
   if (!events || events.length === 0) return null;
   
-  const displayEvents = events.slice(-10);
+  const displayEvents = events.slice(-10).reverse();
   
   return (
     <div className="stageDataView">
