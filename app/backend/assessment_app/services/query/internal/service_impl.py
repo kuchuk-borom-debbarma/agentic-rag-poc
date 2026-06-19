@@ -93,7 +93,15 @@ class DefaultQueryService:
                     if loops + 1 < max_loops:
                         logger.info("Evidence insufficient for %s. Expanding context...", sub_query.query_id)
                         expanded_snippets = self._evidence_collector.expand_context(current_snippets, verification)
-                        expansion_actions.extend(self._evidence_collector.last_expansion_actions)
+                        actions = self._evidence_collector.last_expansion_actions
+                        expansion_actions.extend(actions)
+                        
+                        yield {
+                            "type": "progress", 
+                            "stage": 2, 
+                            "message": f"Context expanded using {', '.join(actions) if actions else 'nothing'}.", 
+                            "data": {"actions": actions}
+                        }
                         
                         # Stop if expansion didn't add anything new
                         if len(expanded_snippets) <= len(current_snippets):
