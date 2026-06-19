@@ -253,7 +253,7 @@ class EvidenceCollector:
         ):
             if phrase in expanded_query.lower() and all(part in normalized_text for part in phrase.split()):
                 score += 18.0
-        if snippet.section_number in {"5.1", "6.1", "1.3"}:
+        if snippet.section_number in {"5.1", "6.1", "1.3", "12"}:
             if _intent_matches_key_clause(expanded_query, snippet.section_number):
                 score += 70.0
         if snippet.section_number == "front.matter" and "front matter" not in expanded_query.lower():
@@ -324,6 +324,8 @@ def _intent_matches_key_clause(query: str, section_number: str) -> bool:
         return any(term in lower for term in ("term", "effective date", "commence", "remain in effect"))
     if section_number == "6.1":
         return any(term in lower for term in ("ownership", "obtain no rights", "licensors"))
+    if section_number == "12":
+        return any(term in lower for term in ("define", "defined", "definition", "meaning", "means", "identical", "same", "what is", "what are", "difference", "entities"))
     return False
 
 
