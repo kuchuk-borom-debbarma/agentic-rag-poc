@@ -101,7 +101,7 @@ function EvaluationView() {
         </label>
         <button className="iconButton primary" disabled={loading} title="Run benchmark">
           {loading ? <Loader2 className="spin" size={18} /> : <Activity size={18} />}
-          <span>Run all 30</span>
+          <span>Run all</span>
         </button>
         <button className="iconButton" type="button" onClick={refreshHistory} disabled={loading} title="Refresh history">
           <RefreshCw size={18} />
