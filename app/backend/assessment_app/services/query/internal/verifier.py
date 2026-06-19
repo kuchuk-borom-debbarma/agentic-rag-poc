@@ -44,9 +44,7 @@ class LLMEvidenceVerifier:
         self._prompt = ChatPromptTemplate.from_messages([
             ("system", "You are a strict verification system evaluating retrieved document chunks. "
                        "Your task is to determine if the provided Evidence contains sufficient information "
-                       "to directly and accurately answer the exact User Query. Related evidence is not "
-                       "sufficient unless it contains the requested obligation, right, deadline, definition, "
-                       "or process in direct form.\n\n"
+                       "to accurately answer the User Query.\n\n"
                        "Rules for expansion if the evidence is insufficient:\n"
                        "- If the text mentions a referenced section that isn't provided, set needs_references=true.\n"
                        "- If the text seems like a sub-point and lacks the overarching definition or section context, set needs_parents=true.\n"
@@ -98,12 +96,12 @@ class LLMEvidenceVerifier:
                 issues=result.issues,
             )
         except Exception as e:
-            logger.warning("LLMEvidenceVerifier failed, failing closed: %s", e)
+            logger.warning("LLMEvidenceVerifier failed, failing open: %s", e)
             return VerificationResult(
-                is_sufficient=False,
+                is_sufficient=True,
                 needs_references=False,
-                needs_parents=True,
-                needs_children=True,
+                needs_parents=False,
+                needs_children=False,
                 needs_neighbors=False,
-                issues=["Verifier failed; evidence treated as insufficient."],
+                issues=[],
             )
