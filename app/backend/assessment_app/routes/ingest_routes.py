@@ -1,6 +1,9 @@
 """RAG ingestion rebuild route."""
 
+import json
+
 from fastapi import APIRouter, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from assessment_app.config.dependencies import RagIngestionServiceDep
@@ -44,11 +47,14 @@ class GraphVisualizationResponse(BaseModel):
     edges: list[GraphEdgeResponse]
 
 
-@router.post("", response_model=IngestResponse)
-async def rebuild_ingestion(service: RagIngestionServiceDep) -> IngestResponse:
+@router.post("")
+async def rebuild_ingestion(service: RagIngestionServiceDep) -> StreamingResponse:
     """Rebuild configured PDF ingestion data."""
-    result = service.rebuild()
-    return IngestResponse(**result.__dict__)
+    def event_generator():
+        for event in service.rebuild():
+            yield f"data: {json.dumps(event)}\n\n"
+            
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.get("/graph", response_model=GraphVisualizationResponse)

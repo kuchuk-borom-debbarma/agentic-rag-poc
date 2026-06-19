@@ -8,6 +8,7 @@ import json
 import logging
 import threading
 import time
+import typing
 from dataclasses import replace
 
 from assessment_app.services.query.public.models import QueryLogEntry, QueryTrace, SourceSnippet, TraceCandidate
@@ -47,7 +48,7 @@ class DefaultQueryService:
         query: str,
         top_k: int | None = None,
         log_query: bool = True,
-    ) -> AskResult:
+    ) -> typing.Iterable[dict[str, typing.Any]]:
         """Search the vector store, verify evidence, and generate a grounded answer."""
         with self._lock:
             started_at = time.perf_counter()
@@ -57,10 +58,11 @@ class DefaultQueryService:
                 raise NotIngestedError()
     
             logger.info("Stage 1: Planning query: %r", query)
+            yield {"type": "progress", "stage": 0, "message": "Planning retrieval..."}
             plan = self._query_planner.plan(query)
             logger.info("Generated plan with %d sub-queries", len(plan.retrieval_queries))
             
-            # Stage 2 & 3: Evidence collection and self-reflective verification loop
+            yield {"type": "progress", "stage": 1, "message": "Searching evidence..."}
             all_sources: dict[str, SourceSnippet] = {}
             trace_steps = []
             max_retries = 2
@@ -78,6 +80,7 @@ class DefaultQueryService:
                         logger.warning("No evidence found for sub-query %s", sub_query.query_id)
                         break
                         
+                    yield {"type": "progress", "stage": 2, "message": "Verifying context..."}
                     verification = self._evidence_verifier.verify(sub_query.query, current_snippets)
                     last_verification = verification
                     if getattr(verification, 'is_sufficient', True):
@@ -120,16 +123,18 @@ class DefaultQueryService:
             )
     
             if not sources:
-                return self._package(query, NO_ANSWER_MESSAGE, False, [], started_at, log_query, trace)
+                yield {"type": "complete", "result": self._package(query, NO_ANSWER_MESSAGE, False, [], started_at, log_query, trace)}
+                return
     
             logger.info("Stage 4: Generating grounded answer from LLM...")
+            yield {"type": "progress", "stage": 3, "message": "Answering with sources..."}
             result = self._chat_client.invoke(build_answer_messages(query, sources))
             answer = str(result.content).strip()
             found = answer_found(answer)
     
             logger.info("Stage 5: Query complete. found=%s latency_ms=%d", found, int((time.perf_counter() - started_at) * 1000))
     
-            return self._package(query, answer, found, sources, started_at, log_query, trace)
+            yield {"type": "complete", "result": self._package(query, answer, found, sources, started_at, log_query, trace)}
 
     def _package(self, query, answer, found, sources, started_at, log_query, trace=None):
         latency_ms = int((time.perf_counter() - started_at) * 1000)

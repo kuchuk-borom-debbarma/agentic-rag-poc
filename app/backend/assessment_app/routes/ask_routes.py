@@ -4,9 +4,11 @@ Depends on the QueryService contract only.
 No try/except — global exception handlers map domain errors to HTTP.
 """
 
+import json
 from dataclasses import asdict
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from assessment_app.config.dependencies import QueryServiceDep
@@ -28,14 +30,22 @@ class AskResponse(BaseModel):
     trace: QueryTraceResponse | None = None
 
 
-@router.post("", response_model=AskResponse)
-async def ask(request: AskRequest, service: QueryServiceDep) -> AskResponse:
+@router.post("")
+async def ask(request: AskRequest, service: QueryServiceDep) -> StreamingResponse:
     """Answer a question against the ingested document using RAG."""
-    result = service.ask(request.query.strip(), request.top_k)
-    return AskResponse(
-        answer=result.answer,
-        answer_found=result.answer_found,
-        latency_ms=result.latency_ms,
-        sources=[SourceResponse(**source.__dict__) for source in result.sources],
-        trace=QueryTraceResponse(**asdict(result.trace)) if result.trace else None,
-    )
+    def event_generator():
+        for event in service.ask(request.query.strip(), request.top_k):
+            if event.get("type") == "complete":
+                result = event["result"]
+                response = AskResponse(
+                    answer=result.answer,
+                    answer_found=result.answer_found,
+                    latency_ms=result.latency_ms,
+                    sources=[SourceResponse(**source.__dict__) for source in result.sources],
+                    trace=QueryTraceResponse(**asdict(result.trace)) if result.trace else None,
+                )
+                yield f"data: {json.dumps({'type': 'complete', 'result': response.model_dump()})}\n\n"
+            else:
+                yield f"data: {json.dumps(event)}\n\n"
+                
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

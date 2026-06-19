@@ -1,5 +1,6 @@
 """Public service contract for the RAG bounded context."""
 
+import typing
 from typing import Protocol
 
 from assessment_app.services.rag.public.models import GraphVisualization, RagIngestionResult
@@ -8,7 +9,7 @@ from assessment_app.services.rag.public.models import GraphVisualization, RagIng
 class RagIngestionService(Protocol):
     """Public contract for rebuilding RAG ingestion data."""
 
-    def rebuild(self) -> RagIngestionResult:
+    def rebuild(self) -> typing.Iterable[dict[str, typing.Any]]:
         """Rebuild parsed sections, graph maps, and vector records."""
         ...
 

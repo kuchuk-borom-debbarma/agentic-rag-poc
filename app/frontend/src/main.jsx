@@ -30,10 +30,13 @@ function App() {
   async function runIngest() {
     setLoading(true);
     setStatus("");
-    setStageRun({ type: "ingest", state: "running" });
+    setStageRun({ type: "ingest", state: "running", activeStage: 0 });
     try {
-      const result = await ingestDocument();
-      setStageRun({ type: "ingest", state: "complete", result });
+      const result = await ingestDocument((event) => {
+        setStageRun({ type: "ingest", state: "running", activeStage: event.stage });
+        setStatus(event.message);
+      });
+      setStageRun({ type: "ingest", state: "complete", result, activeStage: 3 });
       setStatus(`Ingested ${result.section_count} sections, ${result.chunk_count} chunks, and ${result.graph_chunk_count} graph nodes.`);
       await refreshGraph(0, graphLimit);
     } catch (error) {
@@ -51,11 +54,14 @@ function App() {
     }
     setLoading(true);
     setStatus("");
-    setStageRun({ type: "query", state: "running", query: question.trim() });
+    setStageRun({ type: "query", state: "running", query: question.trim(), activeStage: 0 });
     try {
-      const result = await askQuestion(question.trim());
+      const result = await askQuestion(question.trim(), (event) => {
+        setStageRun((prev) => ({ ...prev, activeStage: event.stage }));
+        setStatus(event.message);
+      });
       setAnswer(result);
-      setStageRun({ type: "query", state: "complete", result });
+      setStageRun({ type: "query", state: "complete", result, activeStage: 3 });
     } catch (error) {
       setStageRun({ type: "query", state: "error", error: error.message });
       setStatus(error.message);
@@ -198,14 +204,14 @@ const INGESTION_STAGES = [
     visual: "doc",
   },
   {
-    title: "Build Section Relationships",
-    detail: "Connect parent sections, child sections, and inline references so legal context stays attached.",
-    visual: "tree",
-  },
-  {
     title: "Create Semantic Chunks",
     detail: "Split section text into answer-sized chunks while keeping section lineage and references.",
     visual: "chunks",
+  },
+  {
+    title: "Build Section Relationships",
+    detail: "Connect parent sections, child sections, and inline references so legal context stays attached.",
+    visual: "tree",
   },
   {
     title: "Persist Search Graph",
@@ -247,7 +253,11 @@ function StageTimeline({ run, stages }) {
   return (
     <section className={`stageTimeline ${run.state}`}>
       {stages.map((stage, index) => {
-        const state = errored && index === 0 ? "bad" : running && index === 0 ? "active" : running ? "pending" : "done";
+        const activeStage = run.activeStage ?? 0;
+        const state = errored && index === activeStage ? "bad" : 
+                      running && index === activeStage ? "active" : 
+                      running && index < activeStage ? "done" : 
+                      running ? "pending" : "done";
         return (
           <article className={`stageStep ${state}`} key={stage.title}>
             <StageVisual type={stage.visual} active={state === "active"} />
