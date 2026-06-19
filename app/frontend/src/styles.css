@@ -207,6 +207,39 @@ h3 {
   height: 6px;
 }
 
+.stageDataView {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stageDataEvent {
+  background-color: var(--slate-100);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--slate-200);
+}
+
+.stageDataMessage {
+  font-weight: 500;
+  color: var(--slate-700);
+  margin-bottom: 0.25rem;
+}
+
+.stageDataPayload {
+  background-color: var(--slate-800);
+  color: var(--slate-200);
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
 .stageSummary {
   background: #f8fafc;
   border: 1px solid #d8dde7;

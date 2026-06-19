@@ -53,7 +53,11 @@ function EvaluationView() {
     try {
       const parsedTopK = topK ? Number(topK) : undefined;
       const result = await runEvaluation(parsedTopK, (progress) => {
-        setStatus(`${progress.message} (${progress.completed}/${progress.total})`);
+        let displayStatus = `${progress.message} (${progress.completed}/${progress.total})`;
+        if (progress.data && progress.data.query_event) {
+          displayStatus += `\n↳ ${progress.data.query_event.message}`;
+        }
+        setStatus(displayStatus);
       });
       setDetail(result);
       setExpandedCases(new Set());
@@ -112,7 +116,7 @@ function EvaluationView() {
         </button>
       </form>
 
-      {status && <div className="notice">{status}</div>}
+      {status && <div className="notice" style={{ whiteSpace: "pre-wrap" }}>{status}</div>}
 
       {detail ? (
         <div className="evaluationResult">

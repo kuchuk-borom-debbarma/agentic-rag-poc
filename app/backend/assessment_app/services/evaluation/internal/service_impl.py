@@ -43,6 +43,8 @@ class DefaultEvaluationService:
             for event in self._query_service.ask(benchmark_case.query, top_k, log_query=False):
                 if event.get("type") == "complete":
                     final_result = event["result"]
+                elif event.get("type") == "progress":
+                    yield {"type": "progress", "completed": i, "total": len(selected_cases), "message": f"Evaluating case {benchmark_case.id}...", "data": {"query_event": event}}
             
             if final_result is None:
                 raise RuntimeError(f"Query service did not yield a complete result for case {benchmark_case.id}")

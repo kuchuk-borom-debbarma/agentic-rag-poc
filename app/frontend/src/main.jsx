@@ -30,13 +30,17 @@ function App() {
   async function runIngest() {
     setLoading(true);
     setStatus("");
-    setStageRun({ type: "ingest", state: "running", activeStage: 0 });
+    setStageRun({ type: "ingest", state: "running", activeStage: 0, events: [] });
     try {
       const result = await ingestDocument((event) => {
-        setStageRun({ type: "ingest", state: "running", activeStage: event.stage });
+        setStageRun((prev) => ({ 
+          ...prev, 
+          activeStage: event.stage,
+          events: [...prev.events, event] 
+        }));
         setStatus(event.message);
       });
-      setStageRun({ type: "ingest", state: "complete", result, activeStage: 3 });
+      setStageRun((prev) => ({ ...prev, state: "complete", result, activeStage: 3 }));
       setStatus(`Ingested ${result.section_count} sections, ${result.chunk_count} chunks, and ${result.graph_chunk_count} graph nodes.`);
       await refreshGraph(0, graphLimit);
     } catch (error) {
@@ -54,14 +58,18 @@ function App() {
     }
     setLoading(true);
     setStatus("");
-    setStageRun({ type: "query", state: "running", query: question.trim(), activeStage: 0 });
+    setStageRun({ type: "query", state: "running", query: question.trim(), activeStage: 0, events: [] });
     try {
       const result = await askQuestion(question.trim(), (event) => {
-        setStageRun((prev) => ({ ...prev, activeStage: event.stage }));
+        setStageRun((prev) => ({ 
+          ...prev, 
+          activeStage: event.stage,
+          events: [...prev.events, event] 
+        }));
         setStatus(event.message);
       });
       setAnswer(result);
-      setStageRun({ type: "query", state: "complete", result, activeStage: 3 });
+      setStageRun((prev) => ({ ...prev, state: "complete", result, activeStage: 3 }));
     } catch (error) {
       setStageRun({ type: "query", state: "error", error: error.message });
       setStatus(error.message);
@@ -265,6 +273,7 @@ function StageTimeline({ run, stages }) {
               <span>Step {index + 1}</span>
               <h2>{stage.title}</h2>
               <p>{stage.detail}</p>
+              <StageDataView events={run.events?.filter(e => e.stage === index)} />
             </div>
           </article>
         );
@@ -277,6 +286,25 @@ function StageTimeline({ run, stages }) {
       )}
       {run.state === "error" && <div className="stageSummary errorText">{run.error}</div>}
     </section>
+  );
+}
+
+function StageDataView({ events }) {
+  if (!events || events.length === 0) return null;
+  
+  return (
+    <div className="stageDataView">
+      {events.map((event, i) => (
+        <div key={i} className="stageDataEvent">
+          <div className="stageDataMessage">{event.message}</div>
+          {event.data && (
+            <pre className="stageDataPayload">
+              {JSON.stringify(event.data, null, 2)}
+            </pre>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }
 

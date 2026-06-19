@@ -61,6 +61,7 @@ class DefaultQueryService:
             yield {"type": "progress", "stage": 0, "message": "Planning retrieval..."}
             plan = self._query_planner.plan(query)
             logger.info("Generated plan with %d sub-queries", len(plan.retrieval_queries))
+            yield {"type": "progress", "stage": 0, "message": "Retrieval plan generated.", "data": {"plan": [q.__dict__ for q in plan.retrieval_queries]}}
             
             yield {"type": "progress", "stage": 1, "message": "Searching evidence..."}
             all_sources: dict[str, SourceSnippet] = {}
@@ -69,6 +70,7 @@ class DefaultQueryService:
             
             for sub_query in plan.retrieval_queries:
                 logger.info("Processing sub-query %s: %s", sub_query.query_id, sub_query.query)
+                yield {"type": "progress", "stage": 1, "message": f"Searching evidence for: {sub_query.query}", "data": {"sub_query": sub_query.query}}
                 current_snippets = self._evidence_collector.initial_search(sub_query, top_k, original_query=query)
                 trace_step = self._evidence_collector.last_trace_step
                 
@@ -80,9 +82,10 @@ class DefaultQueryService:
                         logger.warning("No evidence found for sub-query %s", sub_query.query_id)
                         break
                         
-                    yield {"type": "progress", "stage": 2, "message": "Verifying context..."}
+                    yield {"type": "progress", "stage": 2, "message": f"Verifying context for: {sub_query.query}"}
                     verification = self._evidence_verifier.verify(sub_query.query, current_snippets)
                     last_verification = verification
+                    yield {"type": "progress", "stage": 2, "message": "Verification complete.", "data": {"verification": verification.__dict__}}
                     if getattr(verification, 'is_sufficient', True):
                         logger.info("Evidence sufficient for sub-query %s", sub_query.query_id)
                         break
@@ -127,7 +130,7 @@ class DefaultQueryService:
                 return
     
             logger.info("Stage 4: Generating grounded answer from LLM...")
-            yield {"type": "progress", "stage": 3, "message": "Answering with sources..."}
+            yield {"type": "progress", "stage": 3, "message": "Answering with sources...", "data": {"sources_count": len(sources)}}
             result = self._chat_client.invoke(build_answer_messages(query, sources))
             answer = str(result.content).strip()
             found = answer_found(answer)
