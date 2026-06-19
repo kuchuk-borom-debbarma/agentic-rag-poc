@@ -4,11 +4,11 @@ export async function ingestDocument(onProgress) {
   return request("/api/v1/ingest", { method: "POST" }, onProgress);
 }
 
-export async function askQuestion(query, onProgress) {
+export async function askQuestion(query, maxLoops, onProgress) {
   return request("/api/v1/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ query, max_loops: maxLoops }),
   }, onProgress);
 }
 
