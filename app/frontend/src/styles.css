@@ -243,6 +243,57 @@ h3 {
   white-space: pre-wrap;
 }
 
+.prettyData {
+  margin-top: 0.5rem;
+  background-color: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.prettyDataRow {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+}
+
+.prettyDataRow:last-child {
+  margin-bottom: 0;
+}
+
+.prettyDataKey {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  text-transform: capitalize;
+  margin-bottom: 0.25rem;
+}
+
+.prettyDataValue {
+  font-size: 0.8rem;
+  color: var(--slate-700);
+  word-break: break-word;
+}
+
+.prettyDataList {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.prettyDataList li {
+  margin-bottom: 0.25rem;
+}
+
+.scrollableList {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.25rem;
+}
+
 .stageSummary {
   background: #f8fafc;
   border: 1px solid #d8dde7;

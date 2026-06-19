@@ -173,15 +173,17 @@ function App() {
               </article>
               <section className="sources">
                 <h2>Sources</h2>
-                {answer.sources.map((source) => (
-                  <article className="source" key={source.chunk_id}>
-                    <div className="meta">
-                      <span>Page {source.page_start}</span>
-                      <span>{source.chunk_id}</span>
-                    </div>
-                    <p>{source.text}</p>
-                  </article>
-                ))}
+                <div className="scrollableList">
+                  {answer.sources.slice(0, 10).map((source) => (
+                    <article className="source" key={source.chunk_id}>
+                      <div className="meta">
+                        <span>Page {source.page_start}</span>
+                        <span>{source.chunk_id}</span>
+                      </div>
+                      <p>{source.text}</p>
+                    </article>
+                  ))}
+                </div>
               </section>
               <TracePanel trace={answer.trace} />
             </div>
@@ -299,11 +301,44 @@ function StageDataView({ events }) {
       {displayEvents.map((event, i) => (
         <div key={i} className="stageDataEvent">
           <div className="stageDataMessage">{event.message}</div>
-          {event.data && (
-            <pre className="stageDataPayload">
-              {JSON.stringify(event.data, null, 2)}
-            </pre>
-          )}
+          {event.data && <PrettyData payload={event.data} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PrettyData({ payload }) {
+  if (!payload || typeof payload !== "object") return null;
+  
+  return (
+    <div className="prettyData">
+      {Object.entries(payload).map(([key, value]) => (
+        <div key={key} className="prettyDataRow">
+          <span className="prettyDataKey">{key.replace(/_/g, " ")}:</span>
+          <span className="prettyDataValue">
+            {Array.isArray(value) ? (
+              <ul className="prettyDataList">
+                {value.map((v, i) => (
+                  <li key={i}>
+                    {typeof v === 'object' && v !== null ? (
+                      Object.entries(v).map(([k, val]) => (
+                        <div key={k}><strong style={{fontWeight: 500, color: 'var(--slate-500)'}}>{k}</strong>: {String(val)}</div>
+                      ))
+                    ) : (
+                      String(v)
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : typeof value === 'object' && value !== null ? (
+               Object.entries(value).map(([k, val]) => (
+                 <div key={k}><strong style={{fontWeight: 500, color: 'var(--slate-500)'}}>{k}</strong>: {String(val)}</div>
+               ))
+            ) : (
+              String(value)
+            )}
+          </span>
         </div>
       ))}
     </div>
