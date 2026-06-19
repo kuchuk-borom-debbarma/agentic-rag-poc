@@ -13,7 +13,7 @@ function App() {
   const [analytics, setAnalytics] = useState(null);
   const [graph, setGraph] = useState(null);
   const [graphOffset, setGraphOffset] = useState(0);
-  const [graphLimit, setGraphLimit] = useState(120);
+  const [graphLimit, setGraphLimit] = useState(5000);
   const [stageRun, setStageRun] = useState(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -238,18 +238,6 @@ const QUERY_STAGES = [
 ];
 
 function StageTimeline({ run, stages }) {
-  const [activeStage, setActiveStage] = useState(0);
-
-  useEffect(() => {
-    if (run?.state === "running") {
-      setActiveStage(0);
-      const interval = setInterval(() => {
-        setActiveStage((prev) => Math.min(prev + 1, (stages?.length || 1) - 1));
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [run?.state, stages?.length]);
-
   if (!run) {
     return null;
   }
@@ -259,10 +247,7 @@ function StageTimeline({ run, stages }) {
   return (
     <section className={`stageTimeline ${run.state}`}>
       {stages.map((stage, index) => {
-        const state = errored && index === activeStage ? "bad" : 
-                      running && index === activeStage ? "active" : 
-                      running && index < activeStage ? "done" : 
-                      running ? "pending" : "done";
+        const state = errored && index === 0 ? "bad" : running && index === 0 ? "active" : running ? "pending" : "done";
         return (
           <article className={`stageStep ${state}`} key={stage.title}>
             <StageVisual type={stage.visual} active={state === "active"} />
@@ -330,23 +315,6 @@ function GraphView({ graph, offset, limit, onRefresh, onPage, onLimitChange }) {
           <Metric label="References" value={graph?.references_count || 0} />
         </div>
         <div className="graphControls">
-          <label className="numberField">
-            <span>Nodes per page</span>
-            <select value={limit} onChange={onLimitChange}>
-              <option value="60">60</option>
-              <option value="120">120</option>
-              <option value="200">200</option>
-              <option value="300">300</option>
-            </select>
-          </label>
-          <button className="iconButton" type="button" onClick={() => onPage(offset - limit)} disabled={!graph || offset === 0} title="Previous nodes">
-            <ChevronLeft size={18} />
-            <span>Prev</span>
-          </button>
-          <button className="iconButton" type="button" onClick={() => onPage(nextOffset)} disabled={!graph || !hasNext} title="Next nodes">
-            <span>Next</span>
-            <ChevronRight size={18} />
-          </button>
           <button className="iconButton" type="button" onClick={onRefresh} title="Refresh graph">
             <Network size={18} />
             <span>Refresh</span>
@@ -354,10 +322,16 @@ function GraphView({ graph, offset, limit, onRefresh, onPage, onLimitChange }) {
         </div>
       </div>
 
+      {graph && (
+        <div className="notice warning" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          Warning: We are showing the full graph only because it's a small PDF. Rendering large graphs may cause performance issues.
+        </div>
+      )}
+
       {graph ? (
         <>
           <div className="graphRange">
-            Showing {graph.nodes.length} of {graph.total_nodes} nodes and {graph.edges.length} visible edges from {graph.total_edges} total edges.
+            Showing all {graph.total_nodes} nodes and {graph.total_edges} edges.
           </div>
           <GraphCanvas graph={graph} />
           <GraphLegend />

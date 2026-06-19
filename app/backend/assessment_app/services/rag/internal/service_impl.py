@@ -63,13 +63,13 @@ class DefaultRagIngestionService:
             vector_count=self._vector_store.count(),
         )
 
-    def get_graph_visualization(self, offset: int = 0, limit: int = 120) -> GraphVisualization:
+    def get_graph_visualization(self, offset: int = 0, limit: int = 5000) -> GraphVisualization:
         """Load stored graph maps and shape them for the frontend."""
         graph = self._graph_store.load_graph()
         nodes: list[GraphNode] = []
         edges: list[GraphEdge] = []
         safe_offset = max(0, offset)
-        safe_limit = max(1, min(limit, 300))
+        safe_limit = max(1, min(limit, 5000))
 
         for section in graph.sections.values():
             nodes.append(
