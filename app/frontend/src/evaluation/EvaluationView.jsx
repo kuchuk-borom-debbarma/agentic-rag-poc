@@ -176,7 +176,10 @@ function RunHistory({ history, activeRunId, onSelect }) {
             </tr>
           </thead>
           <tbody>
-            {history.slice(0, 10).map((run) => (
+            {[...history]
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .slice(0, 10)
+              .map((run) => (
               <tr key={run.run_id} className={run.run_id === activeRunId ? "activeRow" : ""}>
                 <td>
                   <button className="linkButton" type="button" onClick={() => onSelect(run.run_id)}>
