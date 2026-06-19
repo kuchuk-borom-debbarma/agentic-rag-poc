@@ -292,9 +292,11 @@ function StageTimeline({ run, stages }) {
 function StageDataView({ events }) {
   if (!events || events.length === 0) return null;
   
+  const displayEvents = events.slice(-10);
+  
   return (
     <div className="stageDataView">
-      {events.map((event, i) => (
+      {displayEvents.map((event, i) => (
         <div key={i} className="stageDataEvent">
           <div className="stageDataMessage">{event.message}</div>
           {event.data && (
