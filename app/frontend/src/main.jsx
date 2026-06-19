@@ -238,6 +238,18 @@ const QUERY_STAGES = [
 ];
 
 function StageTimeline({ run, stages }) {
+  const [activeStage, setActiveStage] = useState(0);
+
+  useEffect(() => {
+    if (run?.state === "running") {
+      setActiveStage(0);
+      const interval = setInterval(() => {
+        setActiveStage((prev) => Math.min(prev + 1, (stages?.length || 1) - 1));
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [run?.state, stages?.length]);
+
   if (!run) {
     return null;
   }
@@ -247,7 +259,10 @@ function StageTimeline({ run, stages }) {
   return (
     <section className={`stageTimeline ${run.state}`}>
       {stages.map((stage, index) => {
-        const state = errored && index === 0 ? "bad" : running && index === 0 ? "active" : running ? "pending" : "done";
+        const state = errored && index === activeStage ? "bad" : 
+                      running && index === activeStage ? "active" : 
+                      running && index < activeStage ? "done" : 
+                      running ? "pending" : "done";
         return (
           <article className={`stageStep ${state}`} key={stage.title}>
             <StageVisual type={stage.visual} active={state === "active"} />
