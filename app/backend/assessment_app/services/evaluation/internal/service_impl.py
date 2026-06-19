@@ -36,8 +36,15 @@ class DefaultEvaluationService:
 
         case_results = []
         for benchmark_case in selected_cases:
-            query_result = self._query_service.ask(benchmark_case.query, top_k, log_query=False)
-            case_results.append(self._scorer.score_case(benchmark_case, query_result))
+            final_result = None
+            for event in self._query_service.ask(benchmark_case.query, top_k, log_query=False):
+                if event.get("type") == "complete":
+                    final_result = event["result"]
+            
+            if final_result is None:
+                raise RuntimeError(f"Query service did not yield a complete result for case {benchmark_case.id}")
+                
+            case_results.append(self._scorer.score_case(benchmark_case, final_result))
 
         total_latency_ms = int((time.perf_counter() - started_at) * 1000)
         summary = self._scorer.summarize_run(
