@@ -3,6 +3,7 @@
 Only this file (and models.py / errors.py) may be imported by routes, other services, or config.
 """
 
+import typing
 from typing import Protocol
 
 from assessment_app.services.evaluation.public.models import EvaluationRunDetail, EvaluationRunSummary
@@ -11,7 +12,7 @@ from assessment_app.services.evaluation.public.models import EvaluationRunDetail
 class EvaluationService(Protocol):
     """Public contract for benchmark evaluation."""
 
-    def run_benchmark(self, top_k: int | None = None, case_ids: list[str] | None = None) -> EvaluationRunDetail:
+    def run_benchmark(self, top_k: int | None = None, case_ids: list[str] | None = None) -> typing.Iterable[dict[str, typing.Any]]:
         """Run selected benchmark cases through the real query flow without analytics logging."""
         ...
 

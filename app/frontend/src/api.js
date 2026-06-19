@@ -20,12 +20,12 @@ export async function loadGraph(offset = 0, limit = 120) {
   return request(`/api/v1/ingest/graph?offset=${offset}&limit=${limit}`);
 }
 
-export async function runEvaluation(topK) {
+export async function runEvaluation(topK, onProgress) {
   return request("/api/v1/evaluation/runs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ top_k: topK || undefined }),
-  });
+  }, onProgress);
 }
 
 export async function loadEvaluationRuns() {

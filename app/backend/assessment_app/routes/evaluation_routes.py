@@ -1,8 +1,11 @@
 """Benchmark evaluation routes."""
 
+import json
 from dataclasses import asdict
 
 from fastapi import APIRouter, Query
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from assessment_app.config.dependencies import EvaluationServiceDep
@@ -85,10 +88,14 @@ class EvaluationRunDetailResponse(BaseModel):
     cases: list[EvaluationCaseResultResponse]
 
 
-@router.post("/runs", response_model=EvaluationRunDetailResponse)
-async def run_evaluation(request: RunBenchmarkRequest, service: EvaluationServiceDep) -> EvaluationRunDetailResponse:
+@router.post("/runs")
+async def run_evaluation(request: RunBenchmarkRequest, service: EvaluationServiceDep):
     """Run benchmark evaluation and persist the result."""
-    return _detail_response(service.run_benchmark(top_k=request.top_k, case_ids=request.case_ids))
+    def event_generator():
+        for event in service.run_benchmark(top_k=request.top_k, case_ids=request.case_ids):
+            yield f"data: {json.dumps(jsonable_encoder(event))}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.get("/runs", response_model=list[EvaluationRunSummaryResponse])

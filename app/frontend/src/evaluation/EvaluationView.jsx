@@ -52,10 +52,13 @@ function EvaluationView() {
     setStatus("");
     try {
       const parsedTopK = topK ? Number(topK) : undefined;
-      const result = await runEvaluation(parsedTopK);
+      const result = await runEvaluation(parsedTopK, (progress) => {
+        setStatus(`${progress.message} (${progress.completed}/${progress.total})`);
+      });
       setDetail(result);
       setExpandedCases(new Set());
       setHistory(await loadEvaluationRuns());
+      setStatus("Evaluation completed successfully.");
     } catch (error) {
       setStatus(error.message);
     } finally {
