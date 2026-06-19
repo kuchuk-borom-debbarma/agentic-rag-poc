@@ -20,6 +20,7 @@ router = APIRouter()
 class AskRequest(BaseModel):
     query: str = Field(..., min_length=1)
     top_k: int | None = Field(default=None, ge=1, le=20)
+    max_loops: int | None = Field(default=4, ge=1, le=10)
 
 
 class AskResponse(BaseModel):
@@ -34,7 +35,7 @@ class AskResponse(BaseModel):
 async def ask(request: AskRequest, service: QueryServiceDep) -> StreamingResponse:
     """Answer a question against the ingested document using RAG."""
     def event_generator():
-        for event in service.ask(request.query.strip(), request.top_k):
+        for event in service.ask(request.query.strip(), top_k=request.top_k, max_loops=request.max_loops):
             if event.get("type") == "complete":
                 result = event["result"]
                 response = AskResponse(

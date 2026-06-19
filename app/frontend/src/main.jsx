@@ -17,6 +17,7 @@ function App() {
   const [stageRun, setStageRun] = useState(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [maxLoops, setMaxLoops] = useState(4);
 
   useEffect(() => {
     if (activeTab === "analytics") {
@@ -60,7 +61,7 @@ function App() {
     setStatus("");
     setStageRun({ type: "query", state: "running", query: question.trim(), activeStage: 0, events: [] });
     try {
-      const result = await askQuestion(question.trim(), (event) => {
+      const result = await askQuestion(question.trim(), maxLoops, (event) => {
         setStageRun((prev) => ({ 
           ...prev, 
           activeStage: event.stage,
@@ -156,6 +157,17 @@ function App() {
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Ask about the AWS Customer Agreement"
             />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 0.5rem' }}>
+              <label style={{ fontSize: '12px', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>Max loops:</label>
+              <input 
+                type="number" 
+                min="1" max="10" 
+                value={maxLoops} 
+                onChange={(e) => setMaxLoops(Number(e.target.value))}
+                style={{ width: '60px', padding: '0.5rem' }}
+                title="Max verification expansion loops"
+              />
+            </div>
             <button className="iconButton primary" disabled={loading || !question.trim()} title="Ask">
               {loading ? <Loader2 className="spin" size={18} /> : <Send size={18} />}
               <span>Ask</span>

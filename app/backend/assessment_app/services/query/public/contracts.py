@@ -16,6 +16,7 @@ class QueryService(Protocol):
         self,
         query: str,
         top_k: int | None = None,
+        max_loops: int = 4,
         log_query: bool = True,
     ) -> typing.Iterable[dict[str, typing.Any]]:
         """Search the vector store and generate a grounded answer.

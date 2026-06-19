@@ -47,6 +47,7 @@ class DefaultQueryService:
         self,
         query: str,
         top_k: int | None = None,
+        max_loops: int = 4,
         log_query: bool = True,
     ) -> typing.Iterable[dict[str, typing.Any]]:
         """Search the vector store, verify evidence, and generate a grounded answer."""
@@ -66,7 +67,6 @@ class DefaultQueryService:
             yield {"type": "progress", "stage": 1, "message": "Searching evidence..."}
             all_sources: dict[str, SourceSnippet] = {}
             trace_steps = []
-            max_retries = 2
             
             for sub_query in plan.retrieval_queries:
                 logger.info("Processing sub-query %s: %s", sub_query.query_id, sub_query.query)
@@ -74,10 +74,10 @@ class DefaultQueryService:
                 current_snippets = self._evidence_collector.initial_search(sub_query, top_k, original_query=query)
                 trace_step = self._evidence_collector.last_trace_step
                 
-                retries = 0
+                loops = 0
                 last_verification = None
                 expansion_actions: list[str] = []
-                while retries <= max_retries:
+                while loops < max_loops:
                     if not current_snippets:
                         logger.warning("No evidence found for sub-query %s", sub_query.query_id)
                         break
@@ -90,7 +90,7 @@ class DefaultQueryService:
                         logger.info("Evidence sufficient for sub-query %s", sub_query.query_id)
                         break
                         
-                    if retries < max_retries:
+                    if loops + 1 < max_loops:
                         logger.info("Evidence insufficient for %s. Expanding context...", sub_query.query_id)
                         expanded_snippets = self._evidence_collector.expand_context(current_snippets, verification)
                         expansion_actions.extend(self._evidence_collector.last_expansion_actions)
@@ -101,9 +101,9 @@ class DefaultQueryService:
                             break
                             
                         current_snippets = expanded_snippets
-                        retries += 1
+                        loops += 1
                     else:
-                        logger.warning("Max retries reached for sub-query %s", sub_query.query_id)
+                        logger.warning("Max verification loops reached for sub-query %s", sub_query.query_id)
                         break
                 
                 for snippet in current_snippets:
