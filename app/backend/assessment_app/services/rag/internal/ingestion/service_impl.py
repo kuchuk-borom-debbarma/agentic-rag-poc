@@ -1,6 +1,7 @@
 """Default implementation of the hierarchical parsing ingestion stage."""
 
 from dataclasses import replace
+import typing
 
 from assessment_app.services.rag.internal.ingestion.models import ChunkedContent, Section
 from assessment_app.services.rag.internal.ingestion.parser import HierarchicalAwareParser
@@ -36,9 +37,9 @@ class DefaultSemanticChunkingService:
         self._chunker = chunker
         self._embedding_client = embedding_client
 
-    def chunk(self, sections: list[Section]) -> list[ChunkedContent]:
+    def chunk(self, sections: list[Section]) -> typing.Generator[dict[str, typing.Any], None, list[ChunkedContent]]:
         """Return semantic chunks with embeddings calculated once."""
-        chunks = self._chunker.chunk(sections)
+        chunks = yield from self._chunker.chunk(sections)
         if not chunks:
             return []
 

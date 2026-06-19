@@ -40,17 +40,17 @@ class DefaultRagIngestionService:
             yield {"type": "progress", "stage": 0, "message": "Parsing document into hierarchical sections..."}
             sections = self._parsing_service.parse()
             logger.info("Parsed %d sections.", len(sections))
-            yield {"type": "progress", "stage": 0, "message": f"Parsed {len(sections)} sections.", "data": {"sections": [s.title for s in sections]}}
+            yield {"type": "progress", "stage": 0, "message": f"Parsed {len(sections)} sections."}
             
             yield {"type": "progress", "stage": 1, "message": "Chunking sections semantically..."}
-            chunks = self._chunking_service.chunk(sections)
+            chunks = yield from self._chunking_service.chunk(sections)
             logger.info("Generated %d chunks.", len(chunks))
-            yield {"type": "progress", "stage": 1, "message": f"Created {len(chunks)} semantic chunks.", "data": {"chunk_count": len(chunks)}}
+            yield {"type": "progress", "stage": 1, "message": f"Created {len(chunks)} semantic chunks."}
             
             yield {"type": "progress", "stage": 2, "message": "Building graph navigation maps..."}
             graph = self._graph_builder.build(sections, chunks)
             logger.info("Built graph with %d chunk nodes.", len(graph.chunks))
-            yield {"type": "progress", "stage": 2, "message": f"Built graph with {len(graph.chunks)} chunk nodes.", "data": {"nodes": len(graph.sections) + len(graph.chunks), "chunk_sequence_edges": len(graph.chunk_sequence)}}
+            yield {"type": "progress", "stage": 2, "message": f"Built graph with {len(graph.chunks)} chunk nodes."}
             
             yield {"type": "progress", "stage": 3, "message": "Persisting graph to SQLite and vectors to ChromaDB..."}
             self._graph_store.replace_graph(graph)

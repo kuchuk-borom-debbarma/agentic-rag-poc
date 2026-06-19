@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import re
+import typing
 
 from assessment_app.services.rag.internal.ingestion.models import (
     ChunkedContent,
@@ -26,14 +27,29 @@ class SemanticChunker:
     def __init__(self, max_chars: int = 300) -> None:
         self._max_chars = max_chars
 
-    def chunk(self, sections: list[Section]) -> list[ChunkedContent]:
+    def chunk(self, sections: list[Section]) -> typing.Generator[dict[str, typing.Any], None, list[ChunkedContent]]:
         """Return semantic chunks for content blocks only."""
         chunks: list[ChunkedContent] = []
         for section in sections:
             for layout_index, block in enumerate(section.layout):
                 if not isinstance(block, ContentBlock):
                     continue
-                for chunk_index, span in enumerate(self._split_text(block.data)):
+                spans = self._split_text(block.data)
+                
+                # Yield live chunking data if text was split
+                if len(spans) > 1:
+                    yield {
+                        "type": "progress",
+                        "stage": 1,
+                        "message": f"Chunking block in {section.id}",
+                        "data": {
+                            "text_to_chunk": block.data,
+                            "split_indices": [span.end for span in spans[:-1]],
+                            "resulting_chunks": [span.text for span in spans]
+                        }
+                    }
+
+                for chunk_index, span in enumerate(spans):
                     chunks.append(
                         ChunkedContent(
                             section_id=section.id,
