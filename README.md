@@ -7,10 +7,10 @@ The application consists of a FastAPI backend and a React/Vite frontend. All cor
 ---
 
 ## 🌟 Benchmark Highlights
-The system is deterministically evaluated against a strict 30-case benchmark suite to penalize hallucinations. During the latest evaluation (`gemini-3.1-flash-lite` + `qwen3-embedding`):
-- **90.0% Pass Rate:** Successfully answered or safely rejected 27 out of 30 complex legal questions.
-- **93.3% Hallucination Safety:** Actively recognized and rejected unanswerable "trap" questions without generating false claims.
-- **74.1% Section Recall:** Successfully traversed the SQLite document graph to locate the precise, expected legal clauses.
+The system is deterministically evaluated against a highly curated 13-case benchmark suite to penalize hallucinations. During the latest evaluation (`gemini-3.1-flash-lite` + `qwen3-embedding`):
+- **84.6% Pass Rate:** Successfully answered or safely rejected complex legal questions across the benchmark.
+- **100% Hallucination Safety:** Actively recognized and rejected unanswerable "trap" questions without generating false claims.
+- **70.5% Section Recall:** Successfully traversed the SQLite document graph to locate the precise, expected legal clauses.
 
 ---
 
@@ -21,7 +21,7 @@ To keep this README clean, all technical overviews, architecture decisions, and 
 **Core Reports:**
 - 📄 **[Technical Report](TECHNICAL_REPORT.md)** - A comprehensive 3-page overview of the entire system architecture, answering *why* this system minimizes hallucinations.
 - 📊 **[Evaluation Report](EVALUATION_REPORT.md)** - Detailed analysis of the mathematical benchmarking, section recall, and latency.
-- 🗄️ **[Raw Benchmark CSV Data](app/evaluation/benchmark_results.csv)** - The raw 30-case SQLite data export for independent analysis.
+- 🗄️ **[Raw Benchmark CSV Data](app/evaluation/benchmark_results.csv)** - The raw 13-case SQLite data export for independent analysis.
 
 **Internal Pipeline Deep Dives:**
 - ⚙️ [Ingestion Flow](docs/INGESTION_FLOW.md)

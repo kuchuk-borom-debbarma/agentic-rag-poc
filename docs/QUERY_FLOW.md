@@ -118,6 +118,7 @@ type SourceSnippet = {
 - The collector queries ChromaDB for semantic hits and SQLite for exact graph and lexical hits.
 - LLM-planned `targetSections` are treated as hints. They are fetched only if explicit or validated by title/text overlap.
 - The reranker boosts direct section/title/phrase matches and demotes front matter or indirect disclaimer evidence.
+- **Definition Boost:** If a user asks a definition question ("what is", "define"), the collector explicitly boosts chunks from Section 12 (Definitions) to avoid ambiguous evidence.
 - Fixed failure classes include Section 8 beating Section 1.3, Section 1.4/6.4 beating Section 6.1, and agreement boilerplate beating Section 5.1.
 
 ---
@@ -164,7 +165,7 @@ type VerificationResult = {
 ### Key Points
 - A lightweight LLM judge returns strict boolean flags directing the system on *how* to expand the graph (`needsParents`, `needsNeighbors`).
 - The SQLite edges (`parentSectionId`, `nextChunkId`) are queried instantly to fetch exactly what surrounded the retrieved text in the original document.
-- This creates a `while` loop (capped at a max retry limit) until `isSufficient: true`.
+- This creates a `while` loop (capped at a `max_loops` limit passed by the client) until `isSufficient: true`.
 - Verifier failures fail closed. If JSON parsing or model calls fail, evidence is treated as insufficient rather than accepted.
 - **What is not tackled:** Infinite semantic drift. We strictly limit expansion hops.
 
@@ -211,7 +212,7 @@ type AskResult = {
 - The prompt enforces strict grounding.
 - The answer prompt requires direct evidence. Related but indirect evidence must produce the standard no-answer message.
 - The `AskResult` returns the exact sources used, so the frontend UI can build clickable citations.
-- `AskResult.trace` optionally returns planned queries, candidate pools, reranked candidates, verifier decisions, and expansion actions for debugging.
+- The entire orchestration is streamed back to the client via Server-Sent Events (SSE) so the UI can construct a live Trace Panel, showing planned queries, candidate pools, verifier decisions, and expansion actions in real time.
 
 ---
 

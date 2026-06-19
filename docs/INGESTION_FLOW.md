@@ -299,5 +299,7 @@ type VectorStoreRecord = {
 ### Key Points
 - ChromaDB handles purely semantic retrieval.
 - Crucially, the `id` in ChromaDB maps exactly to `chunk_id` in SQLite. When ChromaDB finds a semantic match, the system uses that `id` to instantly pull the full relational context from SQLite.
+- **Embedding Batching:** The ingestion pipeline batches embedding generation requests (e.g. 50 chunks at a time) to prevent local LLM servers like Ollama from crashing under high parallel load.
+- **SSE Progress:** The entire ingestion process emits Server-Sent Events (SSE) so the React UI can display real-time parsing, chunking, and embedding progress animations.
 - The frontend Graph tab reads paged graph visualization data from the ingestion service. The endpoint defaults to 120 nodes, caps at 300, and only returns edges whose endpoints are visible in the current page.
 - **What is not tackled:** Incremental vector upserts. The current endpoint drops and recreates the collection entirely.

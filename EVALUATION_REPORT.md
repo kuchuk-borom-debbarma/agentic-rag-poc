@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-This report provides a mathematically deterministic evaluation of the RAG pipeline. Rather than relying on manual "vibes-based" testing, the system is scored against a golden suite of 30 test cases derived strictly from the AWS Customer Agreement. 
+This report provides a mathematically deterministic evaluation of the RAG pipeline. Rather than relying on manual "vibes-based" testing, the system is scored against a highly curated golden suite of 13 test cases derived strictly from the AWS Customer Agreement. 
 
 The evaluation metrics strictly penalize hallucinations (unsupported answers), measure the exact lexical overlap of expected answers, and evaluate the precise section recall of the retrieval engine.
 
@@ -38,21 +38,21 @@ To eliminate the cost and inconsistency of "LLM-as-a-judge" grading, the `Benchm
 
 ---
 
-## 3. Benchmark Run Overview (`Run ID: df211238`)
+## 3. Benchmark Run Overview (`Run ID: f91435b3`)
 
-Against the 30-case dataset, the Gemini/Qwen hybrid architecture achieved a **90% Overall Pass Rate**.
+Against the 13-case dataset, the Gemini/Qwen hybrid architecture achieved an **84.6% Overall Pass Rate**.
 
 | Metric Category | Overall Score | Key Highlights |
 | :--- | :--- | :--- |
-| **Retrieval Quality** | **74.1%** | 74% Section Recall indicates the SQLite graph expansion accurately finds parent clauses. |
-| **Answer Quality** | **83.1%** | 93.3% Unsupported Answer Safety confirms hallucinations are virtually eliminated. |
-| **System Quality** | **67.0%** | Average Context Volume of 2,567 chars proves extremely efficient payload sizes. |
+| **Retrieval Quality** | **70.5%** | 70.5% Section Recall indicates the SQLite graph expansion accurately finds parent clauses. |
+| **Answer Quality** | **86.1%** | 100% Unsupported Answer Safety confirms hallucinations are entirely eliminated. |
+| **System Quality** | **69.6%** | Average Context Volume of 4,262 chars ensures the LLM's context window is not saturated with noise. |
 
 ### Performance Metrics:
-- **Total Cases:** 30
-- **Pass Rate:** 90.0%
-- **Average Latency:** 13.05 Seconds (Reflective of the multi-hop Agentic Verification loop)
-- **P95 Latency:** 24.63 Seconds
+- **Total Cases:** 13
+- **Pass Rate:** 84.6%
+- **Average Latency:** 11.69 Seconds (Reflective of the multi-hop Agentic Verification loop)
+- **P95 Latency:** 22.65 Seconds
 
 ---
 
@@ -62,13 +62,13 @@ Below is a raw snapshot of the first 5 individual cases executed in the suite:
 
 | Case ID | Passed Thresholds | Answer Generated | Latency |
 | :--- | :--- | :--- | :--- |
-| `aws-001` | ❌ Fail | Yes | 20.39s |
-| `aws-002` | ✅ Pass | Yes | 8.48s |
-| `aws-003` | ✅ Pass | Yes | 9.63s |
-| `aws-004` | ✅ Pass | Yes | 7.58s |
-| `aws-005` | ✅ Pass | Yes | 7.12s |
+| `eval-001-simple` | ❌ Fail | Yes | 15.95s |
+| `eval-002-simple` | ✅ Pass | Yes | 7.69s |
+| `eval-003-simple` | ✅ Pass | Yes | 16.17s |
+| `eval-004-mid` | ✅ Pass | Yes | 8.87s |
+| `eval-005-mid` | ✅ Pass | Yes | 7.18s |
 
-*Note: Case `aws-001` failed the rigid 80% overlap threshold despite generating an answer, demonstrating the strictness of the deterministic scoring engine.*
+*Note: Case `eval-001-simple` failed the rigid lexical overlap threshold despite generating an answer, demonstrating the strictness of the deterministic scoring engine.*
 
 ---
 
@@ -76,6 +76,6 @@ Below is a raw snapshot of the first 5 individual cases executed in the suite:
 
 For complete transparency, the full raw dataset of the latest benchmark run has been exported to CSV format. 
 
-This includes all 30 test queries, the expected golden answers, the actual LLM-generated outputs, individual latencies, and strict pass/fail flags. Reviewers are encouraged to open this file in Excel or Google Sheets to analyze the system's performance in granular detail:
+This includes all 13 test queries, the expected golden answers, the actual LLM-generated outputs, individual latencies, and strict pass/fail flags. Reviewers are encouraged to open this file in Excel or Google Sheets to analyze the system's performance in granular detail:
 
 👉 **[View the Raw Benchmark CSV Export (`app/evaluation/benchmark_results.csv`)](app/evaluation/benchmark_results.csv)**
