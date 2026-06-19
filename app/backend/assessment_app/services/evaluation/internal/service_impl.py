@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 import time
 import typing
 from uuid import uuid4
+import dataclasses
 
 from assessment_app.services.evaluation.internal.benchmark_cases import get_benchmark_cases
 from assessment_app.services.evaluation.internal.ports import BenchmarkScorer, EvaluationRunRepository
@@ -67,7 +68,7 @@ class DefaultEvaluationService:
             cases=case_results,
         )
         self._run_repository.save_run(detail)
-        yield {"type": "complete", "result": detail.model_dump()}
+        yield {"type": "complete", "result": dataclasses.asdict(detail)}
 
     def list_runs(self, limit: int = 20) -> list[EvaluationRunSummary]:
         """Return stored evaluation run summaries, newest first."""
